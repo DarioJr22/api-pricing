@@ -1,32 +1,37 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ItemDocumentoFiscal } from './item-documento-fiscal.entity';
+import { Imposto } from './imposto.entity';
 
 /**
  * @description Tabela que armazena os impostos aplicados a cada item de um documento fiscal.
  */
 @Entity('imposto_documento_fiscal')
 export class ImpostoDocumentoFiscal {
-  /**
-   * @description Código único do imposto aplicado ao item do documento fiscal (PK).
-   */
-  @PrimaryGeneratedColumn({ comment: 'Código único do imposto aplicado ao item do documento fiscal' })
-  CD_IMPOSTO_DOC_FISCAL: number;
+  @PrimaryGeneratedColumn()
+  cdImpostoDocFiscal: number;
 
-  /**
-   * @description Valor da base de cálculo do imposto.
-   */
-  @Column({ type: 'decimal', precision: 20, scale: 8, comment: 'Valor da base de cálculo do imposto' })
-  VL_BASE_CALCULO: number;
+  @Column({ type: 'decimal', precision: 20, scale: 8 })
+  vlBaseCalculo: number;
 
-  /**
-   * @description Valor do imposto calculado.
-   */
-  @Column({ type: 'decimal', precision: 20, scale: 8, comment: 'Valor do imposto calculado' })
-  VL_IMPOSTO: number;
+  @Column({ type: 'decimal', precision: 20, scale: 8 })
+  vlImposto: number;
 
-  /**
-   * @description Item relacionado ao imposto.
-   */
-  @ManyToOne(() => ItemDocumentoFiscal)
-  CD_ITEM_DOCUMENTO_FISCAL: ItemDocumentoFiscal;
+  // Relacionamento com ItemDocumentoFiscal
+  @ManyToOne(() => ItemDocumentoFiscal, (itemDocumentoFiscal) => itemDocumentoFiscal.impostos)
+  @JoinColumn({ name: 'cdItemDocumentoFiscal' })
+  cdItemDocumentoFiscal: ItemDocumentoFiscal;
+
+  // Relacionamento com Imposto
+  @ManyToOne(() => Imposto, (imposto) => imposto.documentos)
+  @JoinColumn({ name: 'cdImposto' })
+  cdImposto: Imposto;
+
+  // Novas Colunas
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlImpostoRecuperavel: number;
+
+  @Column({ type: 'int' })
+  tpImposto: number;
 }
+
+

@@ -1,32 +1,24 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { ItemDocumentoFiscal } from './item-documento-fiscal.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { ImpostoDocumentoFiscal } from './imposto-documento-fiscal.entity';
 
 /**
  * @description Tabela que armazena os impostos aplicados a cada item de um documento fiscal.
  */
-@Entity('imposto_documento_fiscal')
-export class ImpostoDocumentoFiscal {
-  /**
-   * @description Código único do imposto aplicado ao item do documento fiscal (PK).
-   */
-  @PrimaryGeneratedColumn({ comment: 'Código único do imposto aplicado ao item do documento fiscal' })
-  CD_IMPOSTO_DOC_FISCAL: number;
+@Entity('imposto')
+export class Imposto {
+  @PrimaryGeneratedColumn()
+  cdImposto: number;
 
-  /**
-   * @description Valor da base de cálculo do imposto.
-   */
-  @Column({ type: 'decimal', precision: 20, scale: 8, comment: 'Valor da base de cálculo do imposto' })
-  VL_BASE_CALCULO: number;
+  @Column({ type: 'varchar', length: 100 })
+  dsImposto: string;  // Ex: ICMS, IPI, PIS, COFINS
 
-  /**
-   * @description Valor do imposto calculado.
-   */
-  @Column({ type: 'decimal', precision: 20, scale: 8, comment: 'Valor do imposto calculado' })
-  VL_IMPOSTO: number;
+  @Column({ type: 'int' })
+  tpImposto: number;  // 1: Federal, 2: Estadual, 3: Municipal
 
-  /**
-   * @description Item relacionado ao imposto.
-   */
-  @ManyToOne(() => ItemDocumentoFiscal)
-  CD_ITEM_DOCUMENTO_FISCAL: ItemDocumentoFiscal;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  cdOrigemImposto: string;  // Código de origem (ex.: CST, CSOSN, etc.)
+
+  // Relacionamento com ImpostoDocumentoFiscal
+  @OneToMany(() => ImpostoDocumentoFiscal, (imposto) => imposto.cdImposto)
+  documentos: ImpostoDocumentoFiscal[];
 }

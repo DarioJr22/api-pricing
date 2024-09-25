@@ -1,6 +1,7 @@
 import { ERP } from 'src/modules/integracao/entity/erp.entity';
 import { Pessoa } from '../../pessoa/entities/pessoa.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { FluxoCaixa } from './fluxo-caixa.entity';
 import { ItemDocumentoFiscal } from './item-documento-fiscal.entity';
 
 
@@ -9,61 +10,91 @@ import { ItemDocumentoFiscal } from './item-documento-fiscal.entity';
  */
 @Entity('documento_fiscal')
 export class DocumentoFiscal {
-  /**
-   * @description Código único identificador do documento fiscal (PK).
-   */
-  @PrimaryGeneratedColumn({ comment: 'Código único identificador do documento fiscal' })
-  CD_DOCUMENTO_FISCAL: number;
+  @PrimaryGeneratedColumn()
+  cdDocumentoFiscal: number;
 
-  /**
-   * @description Número do documento fiscal.
-   */
-  @Column({ type: 'varchar', length: 15, comment: 'Número do documento fiscal' })
-  NR_DOCUMENTO: string;
+  @Column({ type: 'varchar', length: 15 })
+  nrDocumento: string;
 
-  /**
-   * @description Série do documento fiscal.
-   */
-  @Column({ type: 'varchar', length: 10, comment: 'Série do documento fiscal' })
-  NR_SERIE: string;
+  @Column({ type: 'varchar', length: 10 })
+  nrSerie: string;
 
-  /**
-   * @description Data de emissão do documento.
-   */
-  @Column({ type: 'date', comment: 'Data de emissão do documento' })
-  DT_EMISSAO: Date;
+  @Column({ type: 'date' })
+  dtEmissao: Date;
 
-  /**
-   * @description Valor total do documento fiscal.
-   */
-  @Column({ type: 'decimal', precision: 12, scale: 2, comment: 'Valor total do documento fiscal' })
-  VL_TOTAL: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlTotal: number;
 
-  /**
-   * @description Chave de acesso da NF-e.
-   */
-  @Column({ type: 'varchar', length: 50, comment: 'Chave de acesso da NF-e' })
-  DS_CHAVE_NFE: string;
+  @Column({ type: 'varchar', length: 500 })
+  xml: string;
 
-  /**
-   * @description Data de entrada ou saída de mercadorias.
-   */
-  @Column({ type: 'date', comment: 'Data de entrada ou saída de mercadorias' })
-  DT_ENT_SAI: Date;
+  @Column({ type: 'varchar', length: 10 })
+  dsModeloFiscal: string;
 
-  /**
-   * @description Pessoa relacionada ao documento fiscal (FK).
-   */
-  @ManyToOne(() => Pessoa)
-  CD_PESSOA: Pessoa;
+  @Column({ type: 'varchar', length: 50 })
+  dsChaveNfe: string;
 
-  /**
-     * @description Erp de origem do documento (FK).
-     */
-  @ManyToOne(() => ERP)
-  CD_ERP: ERP;
+  @Column({ type: 'date' })
+  dtEntSai: Date;
 
-  @OneToMany(() => ItemDocumentoFiscal, item => item.CD_DOCUMENTO_FISCAL)
-  itensDocumentoFiscal: ItemDocumentoFiscal[];
+  @Column({ type: 'varchar', length: 1 })
+  indTransac: string;
 
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlRecuperavel: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlNRecuperavel: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlFrete: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlSeguro: number;
+
+  // Relacionamento com Pessoa
+  @ManyToOne(() => Pessoa, (pessoa) => pessoa.documentos)
+  @JoinColumn({ name: 'cdPessoa' })
+  cdPessoa: Pessoa;
+
+  // Relacionamento com ERP
+  @ManyToOne(() => ERP, (erp) => erp.documentos)
+  @JoinColumn({ name: 'cdErp' })
+  cdErp: ERP;
+
+  // Novas Colunas
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlReceitaBruta: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlReceitaLiquida: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlDesconto: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlCustoProduto: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlLucroBruto: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlLucroLiquido: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlDespesasOperacionais: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlImpostosTotais: number;
+
+  // Relacionamento com FluxoCaixa
+  @OneToMany(() => FluxoCaixa, (fluxoCaixa) => fluxoCaixa.cdDocumentoFiscal)
+  fluxoCaixa: FluxoCaixa[];
+
+  // Relacionamento com Itens do Documento
+  @OneToMany(() => ItemDocumentoFiscal, (item) => item.cdDocumentoFiscal)
+  itens: ItemDocumentoFiscal[];
 }
+
+
+

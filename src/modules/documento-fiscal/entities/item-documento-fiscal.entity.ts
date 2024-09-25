@@ -1,32 +1,51 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { DocumentoFiscal } from './documento-fiscal.entity';
+import { ImpostoDocumentoFiscal } from './imposto-documento-fiscal.entity';
 
 /**
  * @description Tabela que armazena os itens contidos em cada documento fiscal.
  */
 @Entity('item_documento_fiscal')
 export class ItemDocumentoFiscal {
-  /**
-   * @description Código único do item dentro do documento fiscal (PK).
-   */
-  @PrimaryGeneratedColumn({ comment: 'Código único do item dentro do documento fiscal' })
-  CD_ITEM_DOCUMENTO_FISCAL: number;
+  @PrimaryGeneratedColumn()
+  cdItemDocumentoFiscal: number;
 
-  /**
-   * @description Valor do item no documento fiscal.
-   */
-  @Column({ type: 'decimal', precision: 12, scale: 2, comment: 'Valor do item no documento fiscal' })
-  VL_ITEM: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlItem: number;
 
-  /**
-   * @description Descrição complementar do item.
-   */
-  @Column({ type: 'varchar', length: 500, comment: 'Descrição complementar do item' })
-  DS_COMPLEMENTAR: string;
+  @Column({ type: 'varchar', length: 500 })
+  dsComplementar: string;
 
-  /**
-   * @description Documento fiscal relacionado ao item.
-   */
-  @ManyToOne(() => DocumentoFiscal)
-  CD_DOCUMENTO_FISCAL: DocumentoFiscal;
+  @Column({ type: 'decimal', precision: 20, scale: 8 })
+  vlAdicional: number;
+
+  @Column({ type: 'varchar', length: 200 })
+  dsProdutoServico: string;
+
+  @Column({ type: 'varchar', length: 15 })
+  cdProdutoServico: string;
+
+  // Relacionamento com DocumentoFiscal
+  @ManyToOne(() => DocumentoFiscal, (documentoFiscal) => documentoFiscal.itens)
+  @JoinColumn({ name: 'cdDocumentoFiscal' })
+  cdDocumentoFiscal: DocumentoFiscal;
+
+  // Relacionamento com ImpostoDocumentoFiscal
+  @OneToMany(() => ImpostoDocumentoFiscal, (imposto) => imposto.cdItemDocumentoFiscal)
+  impostos: ImpostoDocumentoFiscal[];
+
+  // Novas Colunas
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlCustoItem: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlDescontoItem: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlImpostoItem: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vlLucroItem: number;
 }
+
+

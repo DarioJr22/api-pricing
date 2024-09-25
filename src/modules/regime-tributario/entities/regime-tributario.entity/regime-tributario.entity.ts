@@ -1,25 +1,26 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Pessoa } from 'src/modules/pessoa/entities/pessoa.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 /**
  * @description Tabela que armazena os diferentes regimes tributários utilizados na precificação.
  */
 @Entity('regime_tributario')
 export class RegimeTributario {
-  /**
-   * @description Código único identificador do regime tributário (PK).
-   */
-  @PrimaryGeneratedColumn({ comment: 'Código único identificador do regime tributário' })
-  CD_REGIME_TRIBUTARIO: number;
+  @PrimaryGeneratedColumn()
+  cdRegimeTributario: number;
 
-  /**
-   * @description Descrição completa do regime tributário (ex: Simples Nacional, Lucro Presumido).
-   */
-  @Column({ type: 'varchar', length: 255, comment: 'Descrição completa do regime tributário' })
-  DS_REGIME_TRIBUTARIA: string;
+  @Column({ type: 'varchar', length: 255 })
+  dsRegimeTributario: string;  // Descrição do regime (ex: Simples Nacional, Lucro Presumido, Lucro Real)
 
-  /**
-   * @description Descrição das alíquotas aplicáveis a esse regime tributário.
-   */
-  @Column({ type: 'varchar', length: 500, comment: 'Descrição das alíquotas aplicáveis a esse regime tributário' })
-  DS_ALIQUOTAS_APLICAVEIS: string;
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  dsAliquotasAplicaveis: string;  // Alíquotas aplicáveis a este regime tributário
+
+  @Column({ type: 'smallint', default: 0 })
+  inAplicacaoDesoneracao: boolean;  // Indica se desoneração fiscal é aplicável (1: Sim, 0: Não)
+
+  // Relacionamento com Empresa
+  @OneToMany(() => Pessoa, (pessoas) => pessoas.cdRegimeTributario)
+  pessoas: Pessoa[];
 }
+
+
