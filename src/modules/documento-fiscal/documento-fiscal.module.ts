@@ -6,4 +6,6 @@ import { DocumentoFiscalService } from './services/documento-fiscal.service';
   controllers: [DocumentoFiscalController],
   providers: [DocumentoFiscalService]
 })
-export class DocumentoFiscalModule {}
+export class DocumentoFiscalModule {
+  
+}

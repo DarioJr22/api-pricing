@@ -3,13 +3,13 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity('custos_fixos')
 export class CustosFixos {
   @PrimaryGeneratedColumn()
-  cdCustoFijo: number;
+  cdCustoFixo: number;
 
   @Column({ type: 'varchar', length: 255 })
-  dsCustoFijo: string;
+  dsCustoFixo: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlCustoFijo: number;
+  vlCustoFixo: number;
 
   @Column({ type: 'date' })
   dtInicioVigencia: Date;

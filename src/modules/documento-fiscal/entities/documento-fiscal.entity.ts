@@ -25,7 +25,7 @@ export class DocumentoFiscal {
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   vlTotal: number;
 
-  @Column({ type: 'varchar', length: 500 })
+  @Column({ type: 'varchar', length: 10000 })
   xml: string;
 
   @Column({ type: 'varchar', length: 10 })

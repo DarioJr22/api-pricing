@@ -7,10 +7,19 @@ import { RegimeTributarioModule } from './modules/regime-tributario/regime-tribu
 import { IntegracaoModule } from './modules/integracao/integracao.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from 'config/typeorm.config';
-
+import { BullModule } from '@nestjs/bullmq';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeOrmConfig),
+    BullModule.forRoot({
+      connection:{
+        host:process.env.REDIS_HOST,
+        port:6379
+      }
+    }),
+    BullModule.registerQueue({
+      name:'erp-extract-processor'
+    }),
     DocumentoFiscalModule, 
     PessoaModule, 
     RegimeTributarioModule, 

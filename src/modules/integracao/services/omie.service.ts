@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ERPIntegration } from './integracao';
+import { ERPIntegrationOmie } from './integation';
 import { DocumentoEncontradoDto, SearchDocumentsDto } from '../dto/searchDocs';
 import axios from "axios";
 export interface OmieReqConfig{
@@ -11,9 +11,9 @@ export interface OmieReqConfig{
 
 
 @Injectable()
-export class OmieService implements ERPIntegration {
+export class OmieService implements ERPIntegrationOmie {
 
-    baseUrl: string = 'https://app.omie.com.br/api/v1/contador/xml/';
+
 
     prepareRequisition(
         call:string,
