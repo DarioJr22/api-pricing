@@ -28,6 +28,7 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/schedule": "^4.1.1",
     "@nestjs/typeorm": "^10.0.2",
     "api-pricing": "file:",
     "axios": "^1.7.7",

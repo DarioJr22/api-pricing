@@ -12,8 +12,8 @@ export class RegimeTributario {
   @Column({ type: 'varchar', length: 255 })
   dsRegimeTributario: string;  // Descrição do regime (ex: Simples Nacional, Lucro Presumido, Lucro Real)
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  dsAliquotasAplicaveis: string;  // Alíquotas aplicáveis a este regime tributário
+  @Column('simple-json',{nullable: true })
+  dsAliquotasAplicaveis: any;  // Alíquotas aplicáveis a este regime tributário
 
   @Column({ type: 'smallint', default: 0 })
   inAplicacaoDesoneracao: boolean;  // Indica se desoneração fiscal é aplicável (1: Sim, 0: Não)

@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class DocumentoFiscalService {
-/* 
+
       private async buscarListaNotasTiny(data: any) {
-        // Implementação do Tiny
+        
       }
     
       private async buscarDetalhamentoNotaTiny(notaId: string) {
-        // Implementação do Tiny
+        
       }
     
       private converterNotaTinyParaJSON(detalheNota: any) {
@@ -51,6 +51,6 @@ export class DocumentoFiscalService {
           // Gravar no banco
           await this.gravarNoBanco(notaJson);
         }
-      } */
+      } /* */
 
 }

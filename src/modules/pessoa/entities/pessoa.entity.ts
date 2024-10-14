@@ -1,5 +1,5 @@
 import { DocumentoFiscal } from 'src/modules/documento-fiscal/entities/documento-fiscal.entity';
-import { RegimeTributario } from 'src/modules/regime-tributario/entities/regime-tributario.entity/regime-tributario.entity';
+import { RegimeTributario } from 'src/modules/regime-tributario/entities/regime-tributario.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
 /**
@@ -10,10 +10,10 @@ export class Pessoa {
   @PrimaryGeneratedColumn()
   cdPessoa: number;
 
-  @Column({ type: 'varchar', length: 12 })
+  @Column({ type: 'varchar', length: 100 })
   nmPessoa: string;
 
-  @Column({ type: 'varchar', length: 12 })
+  @Column({ type: 'varchar', length: 100 })
   nrCpfCnpj: string;
 
   @Column({ type: 'varchar', length: 200 })
@@ -25,8 +25,20 @@ export class Pessoa {
   @Column({ type: 'varchar', length: 15 })
   dsCep: string;
 
-  @Column({ type: 'varchar', length: 15 })
-  dsTelefone: string;
+  @Column('simple-array')
+  dsTelefones: string[];
+
+  @Column('simple-json',{nullable:false})
+  apiKey:any
+
+  @Column({type:'varchar',length:12})
+  user:string
+
+  @Column({type:'varchar',length:12})
+  password:string
+
+  @Column({type:'varchar',length:100})
+  email:string
 
   @ManyToOne(() => RegimeTributario, (regime) => regime.pessoas)
   @JoinColumn({ name: 'cdRegimeTributario' })

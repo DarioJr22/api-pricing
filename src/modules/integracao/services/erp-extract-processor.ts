@@ -30,13 +30,13 @@ export class ErpExtractor extends WorkerHost{
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { erp, data } = job.data;
 
-      /*   switch (erp) {
+       switch (erp) {
           case 'tiny':
             return await this.fiscalDocument.processarTiny(data);
           case 'omie':
             return await this.fiscalDocument.processarOmie(data);
           default:
             throw new Error('ERP não suportado');
-        } */
+        }   /**/
     }
 }

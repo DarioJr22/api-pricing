@@ -12,6 +12,7 @@ export interface OmieReqConfig{
 
 @Injectable()
 export class OmieService implements ERPIntegrationOmie {
+    baseUrl: string;
 
 
 
