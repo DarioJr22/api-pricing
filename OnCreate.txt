@@ -1,0 +1,61 @@
+Ordem de população das tabelas
+
+1 - Regime tributário - Dto's abaixo:
+
+
+Simples Nacional
+
+{
+  "dsRegimeTributario": "Simples Nacional",
+  "dsAliquotasAplicaveis": {
+    "irpj": 4,
+    "csll": 4,
+    "pis": 0.65,
+    "cofins": 3,
+    "iss": 2
+  },
+  "inAplicacaoDesoneracao": true
+}
+
+{
+  "dsRegimeTributario": "Lucro Presumido",
+  "dsAliquotasAplicaveis": {
+    "irpj": 15,
+    "csll": 9,
+    "pis": 0.65,
+    "cofins": 3
+  },
+  "inAplicacaoDesoneracao": false
+}
+
+{
+  "dsRegimeTributario": "Lucro Real",
+  "dsAliquotasAplicaveis": {
+    "irpj": 15,
+    "csll": 9,
+    "pis": 1.65,
+    "cofins": 7.6
+  },
+  "inAplicacaoDesoneracao": false
+}
+
+
+2 Pessoas
+
+
+'{
+    "nmPessoa": "Empresa XYZ",
+    "nrCpfCnpj": "123456789012",
+    "dsEndereco": "Rua ABC, 123",
+    "dsEstado": "SP",
+    "dsCep": "01234-567",
+    "dsTelefones": ["11987654321", "11876543210"],
+    "apiKey": { "token": "chaveApiExemplo" },
+    "user": "usuario123",
+    "password": "senha123",
+    "email": "empresa@xyz.com",
+    "cdRegimeTributario": 1
+  }'
+
+
+
