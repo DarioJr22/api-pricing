@@ -17,9 +17,6 @@ import { BullModule } from '@nestjs/bullmq';
         port:6379
       }
     }),
-    BullModule.registerQueue({
-      name:'erp-extract-processor'
-    }),
     DocumentoFiscalModule, 
     PessoaModule, 
     RegimeTributarioModule, 

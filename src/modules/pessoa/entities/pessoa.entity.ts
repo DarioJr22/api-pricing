@@ -1,4 +1,5 @@
 import { DocumentoFiscal } from 'src/modules/documento-fiscal/entities/documento-fiscal.entity';
+import { ERP } from 'src/modules/integracao/entity/erp.entity';
 import { RegimeTributario } from 'src/modules/regime-tributario/entities/regime-tributario.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
@@ -46,5 +47,12 @@ export class Pessoa {
 
   @OneToMany(() => DocumentoFiscal, (documento) => documento.cdPessoa)
   documentos: DocumentoFiscal[];
+
+
+  @ManyToOne(() => ERP, (erp) => erp.pessoa)
+  @JoinColumn({ name: 'cdErp' })
+  cdErp: ERP;
+
+
 }
 

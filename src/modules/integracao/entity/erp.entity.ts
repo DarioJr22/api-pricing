@@ -1,5 +1,6 @@
 import { DocumentoFiscal } from 'src/modules/documento-fiscal/entities/documento-fiscal.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Pessoa } from 'src/modules/pessoa/entities/pessoa.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 
 /**
  * @description Tabela que armazena informações sobre os sistemas ERP integrados ao sistema de precificação.
@@ -21,5 +22,11 @@ export class ERP {
   // Relacionamento com DocumentoFiscal
   @OneToMany(() => DocumentoFiscal, (documento) => documento.cdErp)
   documentos: DocumentoFiscal[];
+
+   // Relacionamento com DocumentoFiscal
+   @OneToMany(() => Pessoa, (documento) => documento.cdPessoa)
+   pessoa: Pessoa[];
+
+
 }
 
