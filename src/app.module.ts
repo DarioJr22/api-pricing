@@ -8,6 +8,9 @@ import { IntegracaoModule } from './modules/integracao/integracao.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from 'config/typeorm.config';
 import { BullModule } from '@nestjs/bullmq';
+import { DocumentoFiscalService } from './modules/documento-fiscal/services/documento-fiscal.service';
+import { PessoaService } from './modules/pessoa/services/pessoa.service';
+import { ExtractProcessor } from './modules/integracao/services/etl/extract/extract.processor';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeOrmConfig),
@@ -17,11 +20,16 @@ import { BullModule } from '@nestjs/bullmq';
         port:6379
       }
     }),
+    BullModule.registerQueue(
+      {name: 'extract'},
+      {name:'transform'},
+      {name:'load'}
+    ),
     DocumentoFiscalModule, 
     PessoaModule, 
     RegimeTributarioModule, 
     IntegracaoModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,DocumentoFiscalService,ExtractProcessor,PessoaService],
 })
 export class AppModule {}

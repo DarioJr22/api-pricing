@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Pessoa } from '../entities/pessoa.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { CreatePessoaDto } from '../dto/create-pessoa.dto';
 
 @Injectable()
 export class PessoaService {
+  private readonly logger = new Logger(PessoaService.name);
     constructor(
         @InjectRepository(Pessoa)
         private readonly pessoaRepository:Repository<Pessoa>,
@@ -24,8 +25,15 @@ export class PessoaService {
           relations:['cdErp']
         })
       }catch(erro){
+        this.logger.log(`ERRO ${erro}`);
         return new HttpException("Erro ao buscar a pessoa",HttpStatus.NOT_FOUND);
       }
+    }
+
+    async findAll(){
+      return await this.pessoaRepository.find({
+        relations:['cdErp']
+      })
     }
 
     //Pense em bons triggers para vocÊ só registrar em um lugar e isso ser replicável FÁCIL
