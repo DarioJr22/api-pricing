@@ -8,22 +8,31 @@ import { ImpostoDocumentoFiscal } from './imposto-documento-fiscal.entity';
 @Entity('item_documento_fiscal')
 export class ItemDocumentoFiscal {
   @PrimaryGeneratedColumn()
-  cdItemDocumentoFiscal: number;
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlItem: number;
+  idItemDocumentoFiscal
 
   @Column({ type: 'varchar', length: 500 })
-  dsComplementar: string;
+  dtEmissao: string; // Código de produto
 
-  @Column({ type: 'decimal', precision: 20, scale: 8 })
-  vlAdicional: number;
+  @Column({ type: 'varchar', length: 500 })
+  nrDocumento: string; // Código de produto
+  
+  @Column({ type: 'varchar', length: 500 })
+  cProd: number; // Código de produto
 
-  @Column({ type: 'varchar', length: 200 })
-  dsProdutoServico: string;
+  @Column({ type: 'varchar', length: 500 })
+  xProd: string; //Descrição de produto
 
-  @Column({ type: 'varchar', length: 15 })
-  cdProdutoServico: string;
+  @Column({ type: 'varchar', length: 500 })
+  uCom: string; //Unidade comercial - Tipo de unidade
+
+  @Column({ type: 'varchar', length: 500 })
+  qCom: string; //Quantidade comercial
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vUnCom: number; //Custo unitário
+
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  vProd: number; //Valor total
 
   // Relacionamento com DocumentoFiscal
   @ManyToOne(() => DocumentoFiscal, (documentoFiscal) => documentoFiscal.itens)
@@ -34,18 +43,6 @@ export class ItemDocumentoFiscal {
   @OneToMany(() => ImpostoDocumentoFiscal, (imposto) => imposto.cdItemDocumentoFiscal)
   impostos: ImpostoDocumentoFiscal[];
 
-  // Novas Colunas
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlCustoItem: number;
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlDescontoItem: number;
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlImpostoItem: number;
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlLucroItem: number;
 }
 
 

@@ -5,14 +5,14 @@ import { ImpostoDocumentoFiscal } from './imposto-documento-fiscal.entity';
  * @description Tabela que armazena os impostos aplicados a cada item de um documento fiscal.
  */
 @Entity('imposto')
-export class Imposto {
+export class TipoImposto {
   @PrimaryGeneratedColumn()
   cdImposto: number;
 
   @Column({ type: 'varchar', length: 100 })
   dsImposto: string;  // Ex: ICMS, IPI, PIS, COFINS
 
-  @Column({ type: 'int' })
+  @Column({ type: 'varchar',length: 100 })
   tpImposto: number;  // 1: Federal, 2: Estadual, 3: Municipal
 
   @Column({ type: 'varchar', length: 20, nullable: true })

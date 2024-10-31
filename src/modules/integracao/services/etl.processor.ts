@@ -1,4 +1,4 @@
-import { InjectQueue, OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
+/* import { InjectQueue, OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
 import Bottleneck from 'bottleneck';
@@ -260,3 +260,4 @@ export class ErpExtractor extends WorkerHost {
 
     }
 }
+ */

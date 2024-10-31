@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PessoaService } from '../../pessoa/services/pessoa.service';
-import { DocumentoFiscalDTO, ImpostoDTO, ItemDocumentoFiscalDTO, RespostaDTO } from '../dto/doc-fiscal.dto';
+import { DocumentoFiscalDTO, ImpostoDTO, ItemDocumentoFiscalDTO, NotaFiscalDTO } from '../dto/doc-fiscal.dto';
 import Bottleneck from 'bottleneck';
 import { LINKSINTEGRATION } from 'src/modules/integracao/services/links-integracao';
 import axios from 'axios';
@@ -13,6 +13,7 @@ import { ImpostoDocumentoFiscal } from '../entities/imposto-documento-fiscal.ent
 import { Repository } from 'typeorm';
 import { parseStringPromise } from 'xml2js';
 import { Pessoa } from 'src/modules/pessoa/entities/pessoa.entity';
+import { TipoImposto } from '../entities/imposto.entity';
 @Injectable()
 export class DocumentoFiscalService {
     public readonly logger = new Logger(DocumentoFiscalService.name);
@@ -20,13 +21,16 @@ export class DocumentoFiscalService {
 
     constructor(
         private readonly pessoaService: PessoaService,
-        @InjectQueue('extract') private readonly erpDataQueue: Queue,
+        @InjectQueue('extract') private readonly extractDataQueue: Queue,
+        @InjectQueue('transform') private readonly transformDataQueue: Queue,
         @InjectRepository(DocumentoFiscal)
         private readonly documentoFiscalRepository: Repository<DocumentoFiscal>,
         @InjectRepository(ItemDocumentoFiscal)
         private readonly itemDocumentoFiscalRepository: Repository<ItemDocumentoFiscal>,
         @InjectRepository(ImpostoDocumentoFiscal)
-        private readonly impostoDocumentoFiscalRepository: Repository<ImpostoDocumentoFiscal>
+        private readonly impostoDocumentoFiscalRepository: Repository<ImpostoDocumentoFiscal>,
+        @InjectRepository(TipoImposto)
+        private readonly tpImposto:Repository<TipoImposto>
     ) {
         this.initializeLimiter();
     }
@@ -45,7 +49,7 @@ export class DocumentoFiscalService {
     async processarTodosClientes() {
         const clientes = await this.pessoaService.findAll();
         for (const cliente of clientes) {
-          await this.erpDataQueue.add('extract', {
+          await this.extractDataQueue.add('extract', {
               client: cliente,
               erp: cliente.cdErp.dsErp
           });
@@ -55,7 +59,7 @@ export class DocumentoFiscalService {
 
 
     // Processar notas do Tiny com controle de requisições
-    async processarNotasTiny(cliente: Pessoa) {
+    async extractNotasTiny(cliente: Pessoa) {
     
         this.logger.log(`Params:${cliente.nmPessoa}, 
             ${await this.getFormatDate(await this.getStartOfLastYear())},
@@ -68,18 +72,49 @@ export class DocumentoFiscalService {
             await this.getFormatDate() //Pegar data de hojer
             ));
 
-        for (const nota of notasTiny.data) {
-            console.log(nota);
-            
-            const detalheNota = await this.limiter.schedule(() => this.buscarDetalhamentoNotaTiny(nota.nota_fiscal.id, notasTiny.client['apiKey']['token']['app_key']));
-
-            const documentoFiscalDTO = new DocumentoFiscalDTO(detalheNota);
-            const itensDTO = detalheNota.itens.map((item: any) => new ItemDocumentoFiscalDTO(item));
-            //const impostosDTO = detalheNota.imposto.map((imposto: any) => new ImpostoDTO(imposto));
-
-
-           // await this.gravarDocumentoFiscal(documentoFiscalDTO, itensDTO, impostosDTO);
+        for (const nota of notasTiny.data) {  
+            this.limiter.schedule(async ()=> 
+                
+            await this.transformDataQueue.add('transform-tiny',{
+                erp:'Tiny',
+                data:nota,
+                cliente:cliente,
+                token:notasTiny.client['apiKey']['token']['app_key']
+            }))
+           
         }
+    }
+
+    async transformNotasTiny(nota:any,token:string,cliente:Pessoa){
+
+
+        const detalheNota:{retorno: NotaFiscalDTO} =  await this.buscarDetalhamentoNotaTiny(nota.nota_fiscal.id, token);
+       
+            const documentoFiscalDTO = new DocumentoFiscalDTO(detalheNota,cliente);
+        
+            const itensDTO:ItemDocumentoFiscalDTO[] = []
+        
+            const impostosDTO:ImpostoDTO[] = []
+        
+            const itemNf = detalheNota.retorno.xml_nfe[0].nfeProc[0].NFe[0].infNFe[0].det
+            const tpImposto = await this.getTpImpoto();
+            async function processItemsNf(item,calculo:any){
+                itensDTO.push(new ItemDocumentoFiscalDTO(detalheNota,item))
+                
+                Object.keys(calculo).forEach((imposto) => {impostosDTO.push(new ImpostoDTO(calculo[imposto]))})
+                
+            }
+
+            for( const item of itemNf){
+                await processItemsNf(item,await this.totalImposto(item.imposto[0],tpImposto))
+            }
+
+            return {
+                nota:documentoFiscalDTO,
+                item:itensDTO,
+                imposto:impostosDTO,
+                erp:'Tiny'
+            }
     }
 
      // Método para buscar a lista de notas no Tiny
@@ -160,7 +195,7 @@ export class DocumentoFiscalService {
             console.log(id)
             try {
                 const response = await limiter.schedule(() =>
-                    axios.get<{retorno:RespostaDTO}>(`${LINKSINTEGRATION.TINY_GET_DOCUMENT_DETAIL}`, {
+                    axios.get(`${LINKSINTEGRATION.TINY_GET_DOCUMENT_DETAIL}`, {
                         params: {
                             token: token,
                             id: id,
@@ -169,7 +204,8 @@ export class DocumentoFiscalService {
                 );
                 console.log(`Busca da nota ${id}`);
                 console.log(response.data);
-                return response.data.retorno.nota_fiscal;
+                console.log(await parseStringPromise(response.data));
+                return await parseStringPromise(response.data)
             } catch (error) {
                 console.log(error)
                 throw new HttpException('Erro ao buscar detalhamento da nota no Tiny', HttpStatus.BAD_GATEWAY);
@@ -184,13 +220,13 @@ export class DocumentoFiscalService {
         const notasOmie = await this.limiter.schedule(() => this.buscarNotasOmie(cliente.cdPessoa));
 
         for (const xmlNota of notasOmie) {
-            const notaJson = await this.xmlToJson(xmlNota); // Converter XML para JSON aqui
+           /*  const notaJson = await this.xmlToJson(xmlNota); // Converter XML para JSON aqui
 
             const documentoFiscalDTO = new DocumentoFiscalDTO(notaJson);
-            const itensDTO = notaJson.itens.map((item: any) => new ItemDocumentoFiscalDTO(item));
+            const itensDTO = notaJson.itens.map((item: any) => new ItemDocumentoFiscalDTO(documentoFiscalDTO,item));
             const impostosDTO = notaJson.imposto.map((imposto: any) => new ImpostoDTO(imposto));
 
-            await this.gravarDocumentoFiscal(documentoFiscalDTO, itensDTO, impostosDTO);
+            await this.gravarDocumentoFiscal(documentoFiscalDTO, itensDTO, impostosDTO); */
         }
     }
 
@@ -243,28 +279,25 @@ export class DocumentoFiscalService {
 
       /* Load */
 
-      private async gravarDocumentoFiscal(
+       async loadData(
         documentoFiscalDTO: DocumentoFiscalDTO,
         itensDTO: ItemDocumentoFiscalDTO[],
         impostosDTO?: ImpostoDTO[]
     ) {
+         // Carregamento dos dados no banco de dados
+        // Simulação de persistência no banco
         // Gravação do documento fiscal
-        const documentoFiscal = await this.documentoFiscalRepository.save(documentoFiscalDTO);
+        const docSave = await this.documentoFiscalRepository.create(documentoFiscalDTO);
+        const documentoFiscal = await this.documentoFiscalRepository.save(docSave);
     
         // Processa cada item do DTO e salva no banco de dados
         for (const itemDTO of itensDTO) {
             // Transformando o DTO em uma entidade ItemDocumentoFiscal
             const item = new ItemDocumentoFiscal();
             item.cdDocumentoFiscal = documentoFiscal;
-            item.cdProdutoServico = itemDTO.codigoProduto;
-            item.dsProdutoServico = itemDTO.descricao;
-            item.vlItem = itemDTO.valorTotal;
-            item.dsComplementar = itemDTO.descricaoComplementar;
-            item.vlAdicional = itemDTO.valorAdicional;
-            item.vlCustoItem = itemDTO.valorCusto; // Esse valor pode ser calculado ou fornecido
-            item.vlDescontoItem = itemDTO.valorDesconto;
-            item.vlImpostoItem = itemDTO.valorImposto;
-            item.vlLucroItem = itemDTO.valorLucro; // Esse valor pode ser calculado
+            Object.assign(item,itemDTO)
+            
+            // Esse valor pode ser calculado
     
             // Salvando o item no banco de dados
             const itemSalvo = await this.itemDocumentoFiscalRepository.save(item);
@@ -274,7 +307,7 @@ export class DocumentoFiscalService {
                 const impostoDocumentoFiscal = new ImpostoDocumentoFiscal();
                 impostoDocumentoFiscal.cdItemDocumentoFiscal = itemSalvo;
                 impostoDocumentoFiscal.vlImposto = impostoDTO.vlImposto;
-                impostoDocumentoFiscal.vlBaseCalculo = impostoDTO.vlBaseCalculo;
+                impostoDocumentoFiscal.cdImposto = impostoDTO.cdImposto;
                 await this.impostoDocumentoFiscalRepository.save(impostoDocumentoFiscal);
             }
         }
@@ -282,13 +315,8 @@ export class DocumentoFiscalService {
     }
 
     // Load
-    
-      async loadData(transformedData: any): Promise<void> {
-        // Carregamento dos dados no banco de dados
-        // Simulação de persistência no banco
-        console.log(`Persistindo dados transformados para o cliente ${transformedData.clienteId}`);
-      }
-    //Load data 
+
+    //Utils
     async getFormatDate(dt?:Date){
         const date = dt ? dt : new Date();
         const day = date.getDate().toString().padStart(2, '0'); // Obtém o dia com dois dígitos
@@ -299,7 +327,82 @@ export class DocumentoFiscalService {
 
     async getStartOfLastYear() {
         const currentYear = new Date().getFullYear();
-        return new Date(currentYear - 1, 0, 1); // Ano passado, mês 0 (Janeiro), dia 1
+        return new Date(currentYear, 0, 1); // Ano passado, mês 0 (Janeiro), dia 1
+    }   
+
+    async handleXml(xmlString){
+        return await parseStringPromise(xmlString);
+    }
+
+// Tabela de impostos para referência de tipo e categoria
+ tabelaImpostos = {
+    ICMS: { cdImposto: 1, dsImposto: "Estadual" },
+    IPI: { cdImposto: 2, dsImposto: "Federal" },
+    PIS: { cdImposto: 3, dsImposto: "Federal" },
+    COFINS: { cdImposto: 4, dsImposto: "Federal" },
+    ISS: { cdImposto: 5, dsImposto: "Municipal" },
+    II: { cdImposto: 6, dsImposto: "Federal" },
+    FCP: { cdImposto: 7, dsImposto: "Estadual" },
+    "ICMS-ST": { cdImposto: 8, dsImposto: "Estadual" },
+  };
+
+  async getTpImpoto(){
+    return this.tpImposto.find()
+  }
+  
+  // Função recursiva para extrair e somar valores dos impostos
+   // Função de cálculo adaptada
+async calcularTotais(impostoData, tabelaImpostos) {
+    const totais = {};
+
+    
+  function normalizarImposto(tipoImposto) {
+    return tipoImposto === "ICMSST" ? "ICMS-ST" : tipoImposto;
+  }
+
+    // Função para encontrar o tipo de imposto na lista de TipoImposto
+    function encontrarTipoImposto(impostoNome, tabela) {
+        return tabela.find((imposto) => imposto.dsImposto === impostoNome) || null;
+    }
+  
+    function somaValores(obj) {
+      if (Array.isArray(obj)) {
+        obj.forEach(somaValores);
+      } else if (typeof obj === "object" && obj !== null) {
+        for (const chave in obj) {
+          if (chave.startsWith("v")) {
+            const tipoImpostoNome = normalizarImposto(chave.slice(1)); // Ex.: ICMS, IPI, etc.
+            const valor = parseFloat(obj[chave][0] || 0);
+  
+            const tipoImposto = encontrarTipoImposto(tipoImpostoNome, tabelaImpostos);
+            if (tipoImposto) {
+              if (!totais[tipoImpostoNome]) {
+                totais[tipoImpostoNome] = {
+                  cdImposto: tipoImposto.cdImposto,
+                  dsImposto: tipoImposto.dsImposto,
+                  tpImposto: tipoImposto.tpImposto,
+                  vlImposto: 0
+                };
+              }
+              totais[tipoImpostoNome].vlImposto += valor;
+            }
+          } else {
+            somaValores(obj[chave]); // Continuar a busca recursiva
+          }
+        }
       }
+    }
+  
+    somaValores(impostoData);
+    return totais;
+  }
+  
+  // Chamando a função
+
+  async totalImposto(nfValue,impostos){
+    return await this.calcularTotais(nfValue,impostos)
+  }
+
+
 
     }

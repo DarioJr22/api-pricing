@@ -12,7 +12,7 @@ async function bootstrap() {
   const queue_transform = app.get<Queue>(getQueueToken('transform'));
 
   // Setup do Bull Board
-  setupBullBoard([queue_extract,queue_load,queue_transform]);
+  setupBullBoard([queue_extract,queue_transform,queue_load]);
 
   await app.listen(3000);
 }

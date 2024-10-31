@@ -8,6 +8,7 @@ import { ItemDocumentoFiscal } from './entities/item-documento-fiscal.entity';
 import { ImpostoDocumentoFiscal } from './entities/imposto-documento-fiscal.entity';
 import { FluxoCaixa } from './entities/fluxo-caixa.entity';
 import { IntegracaoModule } from '../integracao/integracao.module';
+import { TipoImposto } from './entities/imposto.entity';
 
 @Module({
   imports:[
@@ -18,6 +19,7 @@ import { IntegracaoModule } from '../integracao/integracao.module';
       FluxoCaixa,
       Pessoa,
       RegimeTributario,
+      TipoImposto
     ]),
     forwardRef(() => IntegracaoModule), 
    ],

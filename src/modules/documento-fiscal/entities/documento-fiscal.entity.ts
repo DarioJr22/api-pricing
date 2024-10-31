@@ -10,10 +10,12 @@ import { ItemDocumentoFiscal } from './item-documento-fiscal.entity';
  */
 @Entity('documento_fiscal')
 export class DocumentoFiscal {
+
+  /* Identificação da Nota  */
   @PrimaryGeneratedColumn()
   cdDocumentoFiscal: number;
 
-  @Column({ type: 'varchar', length: 15 })
+  @Column({ type: 'varchar', length: 200 })
   nrDocumento: string;
 
   @Column({ type: 'varchar', length: 10 })
@@ -25,26 +27,53 @@ export class DocumentoFiscal {
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   vlTotal: number;
 
-  @Column({ type: 'varchar', length: 10000 })
-  xml: string;
+  /* Categorização da nota */
+  @Column({ type: 'varchar', length: 200 }) //Tipo da nota -- (Entrada / Saída)
+  tpNf: string;
 
-  @Column({ type: 'varchar', length: 10 })
-  dsModeloFiscal: string;
+  @Column({ type: 'varchar', length: 200 }) //Natureza da operação
+  natOp: string;
+
+  @Column({ type: 'varchar', length: 200 }) //Descrição literal do status da nota 
+  xMotivo: string;
+
+  @Column({ type: 'varchar', length: 200 }) //Forma / Canal de pagamento 
+  xPag: string;
+
+
+  /* Identificação do cliente (dest) */
+  @Column({ type: 'varchar'}) //Onde vai ficar cpf cnpj
+  nrIde: string;
+
+
+  @Column({ type: 'varchar'}) //Onde vai ficar cpf cnpj
+  nomeCliente: string;
+
+
+  @Column({ type: 'varchar'}) //Rua + Nr
+  lagradouroCliente: string;
+
+  @Column({ type: 'varchar'}) 
+  bairro: string;
+
+  @Column({ type: 'varchar'}) //Cidade
+  cidade: string;
+
+  @Column({ type: 'varchar'}) //Rua + Nr
+  uf: string;
+
+  @Column({ type: 'varchar'}) //Rua + Nr
+  cep: string;
+
+
+  @Column({ type: 'varchar', length: 1000000 })
+  xml: string;
 
   @Column({ type: 'varchar', length: 50 })
   dsChaveNfe: string;
 
   @Column({ type: 'date' })
   dtEntSai: Date;
-
-  @Column({ type: 'varchar', length: 1 })
-  indTransac: string;
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlRecuperavel: number;
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlNRecuperavel: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   vlFrete: number;

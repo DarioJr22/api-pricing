@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ItemDocumentoFiscal } from './item-documento-fiscal.entity';
-import { Imposto } from './imposto.entity';
+import { TipoImposto } from './imposto.entity';
 
 /**
  * @description Tabela que armazena os impostos aplicados a cada item de um documento fiscal.
@@ -11,9 +11,6 @@ export class ImpostoDocumentoFiscal {
   cdImpostoDocFiscal: number;
 
   @Column({ type: 'decimal', precision: 20, scale: 8 })
-  vlBaseCalculo: number;
-
-  @Column({ type: 'decimal', precision: 20, scale: 8 })
   vlImposto: number;
 
   // Relacionamento com ItemDocumentoFiscal
@@ -22,16 +19,9 @@ export class ImpostoDocumentoFiscal {
   cdItemDocumentoFiscal: ItemDocumentoFiscal;
 
   // Relacionamento com Imposto
-  @ManyToOne(() => Imposto, (imposto) => imposto.documentos)
+  @ManyToOne(() => TipoImposto, (imposto) => imposto.documentos)
   @JoinColumn({ name: 'cdImposto' })
-  cdImposto: Imposto;
-
-  // Novas Colunas
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  vlImpostoRecuperavel: number;
-
-  @Column({ type: 'int' })
-  tpImposto: number;
+  cdImposto: TipoImposto;
 }
 
 

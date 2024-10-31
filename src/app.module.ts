@@ -10,7 +10,9 @@ import { typeOrmConfig } from 'config/typeorm.config';
 import { BullModule } from '@nestjs/bullmq';
 import { DocumentoFiscalService } from './modules/documento-fiscal/services/documento-fiscal.service';
 import { PessoaService } from './modules/pessoa/services/pessoa.service';
-import { ExtractProcessor } from './modules/integracao/services/etl/extract/extract.processor';
+import { ExtractProcessor } from './modules/integracao/services/etl/extract.processor';
+import { TransformProcessor } from './modules/integracao/services/etl/transform.processor';
+import { LoadProcessor } from './modules/integracao/services/etl/load.processor';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeOrmConfig),
@@ -30,6 +32,13 @@ import { ExtractProcessor } from './modules/integracao/services/etl/extract/extr
     RegimeTributarioModule, 
     IntegracaoModule],
   controllers: [AppController],
-  providers: [AppService,DocumentoFiscalService,ExtractProcessor,PessoaService],
+  providers: [
+    AppService,
+    DocumentoFiscalService,
+    ExtractProcessor,
+    TransformProcessor,
+    LoadProcessor,
+    PessoaService
+  ],
 })
 export class AppModule {}

@@ -16,7 +16,7 @@ export class ExtractProcessor extends WorkerHost{
     constructor(
         private readonly pessoaService: PessoaService,
         private readonly documentoFiscalService: DocumentoFiscalService,
-        @InjectQueue('transform') private readonly transformQueue: Queue,
+        @InjectQueue('extract') private readonly transformQueue: Queue,
       ) {
         super();
       }
@@ -42,8 +42,8 @@ export class ExtractProcessor extends WorkerHost{
             this.logger.log(`Iniciando extração para o cliente ${client} e ERP ${erp}`);
             /* const extractedData = */ 
 
-            if (erp === 'tiny') {
-                await this.documentoFiscalService.processarNotasTiny(client);
+            if (erp === 'Tiny') {
+                await this.documentoFiscalService.extractNotasTiny(client);
             } /* else if (erp === 'omie') {
                 await this.processarNotasOmie(cliente);
             } else {

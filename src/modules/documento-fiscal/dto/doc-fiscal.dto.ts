@@ -1,88 +1,98 @@
+import { TipoImposto } from './../entities/imposto.entity';
+import { ERP } from "src/modules/integracao/entity/erp.entity";
+import { Pessoa } from "src/modules/pessoa/entities/pessoa.entity";
 export class DocumentoFiscalDTO {
-    numero: string;              // Número da NF-e (nNF)
-    serie: string;               // Série da NF-e (serie)
-    dataEmissao: Date;           // Data de emissão (dhEmi)
-    valorTotal: number;          // Valor total da NF-e (vNF)
-    chaveNfe: string;            // Chave da NF-e (chNFe)
-    xml: string;                 // XML completo da nota
-    emitente: string;            // Nome do emitente (xNome emit)
-    destinatario: string;        // Nome do destinatário (xNome dest)
-    naturezaOperacao: string;    // Natureza da operação (natOp)
-    cnpjEmitente: string;        // CNPJ do emitente (CNPJ emit)
-    cnpjDestinatario: string;    // CNPJ do destinatário (CNPJ dest)
-    valorProdutos: number;       // Valor total dos produtos (vProd total)
-    valorICMS: number;           // Valor total do ICMS (vICMS)
-    valorICMSST: number;         // Valor do ICMS Substituição Tributária (vST)
-    valorIPI: number;            // Valor total do IPI (vIPI)
-    valorPIS: number;            // Valor total do PIS (vPIS)
-    valorCOFINS: number;         // Valor total do COFINS (vCOFINS)
-    valorFrete: number;          // Valor do frete (vFrete)
-    valorSeguro: number;         // Valor do seguro (vSeg)
-    valorDesconto: number;       // Valor total de descontos (vDesc)
-    valorOutros: number;         // Outros valores adicionais (vOutro)
-    valorTotalTributos: number;  // Valor aproximado dos tributos (vTotTrib)
-    valorNotaFiscal: number;     // Valor líquido da nota fiscal (vNF)
+  nrDocumento: string;
+  nrSerie: string;
+  dtEmissao: Date;
+  vlTotal: number;
+  tpNf: string;
+  natOp: string;
+  xMotivo: string;
+  xPag: string;
+  nrIde: string;
+  nomeCliente: string;
+  lagradouroCliente: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  cep: string;
+  xml: string;
+  cdPessoa:Pessoa
+  cdErp:ERP
+  dsChaveNfe: string;
+  dtEntSai: Date;
+  vlFrete: number;
+  vlSeguro: number;
+  vlReceitaBruta: number;
+  vlReceitaLiquida: number;
+  vlDesconto: number;
+  vlCustoProduto: number;
+  vlLucroBruto: number;
+  vlLucroLiquido: number;
+  vlDespesasOperacionais: number;
+  vlImpostosTotais: number;
 
-    constructor(nfeData: any) {
-        // Inicializando os campos baseados nos dados da NF-e
-        this.numero = nfeData.ide.nNF;
-        this.serie = nfeData.ide.serie;
-        this.dataEmissao = new Date(nfeData.ide.dhEmi);
-        this.valorTotal = parseFloat(nfeData.total.ICMSTot.vNF);
-        this.chaveNfe = nfeData.infProt.chNFe;
-        this.xml = nfeData.xml;
-        this.emitente = nfeData.emit.xNome;
-        this.destinatario = nfeData.dest.xNome;
-        this.naturezaOperacao = nfeData.ide.natOp;
-        this.cnpjEmitente = nfeData.emit.CNPJ;
-        this.cnpjDestinatario = nfeData.dest.CNPJ;
-        this.valorProdutos = parseFloat(nfeData.total.ICMSTot.vProd);
-        this.valorICMS = parseFloat(nfeData.total.ICMSTot.vICMS);
-        this.valorICMSST = parseFloat(nfeData.total.ICMSTot.vST);
-        this.valorIPI = parseFloat(nfeData.total.ICMSTot.vIPI);
-        this.valorPIS = parseFloat(nfeData.total.ICMSTot.vPIS);
-        this.valorCOFINS = parseFloat(nfeData.total.ICMSTot.vCOFINS);
-        this.valorFrete = parseFloat(nfeData.total.ICMSTot.vFrete || '0');
-        this.valorSeguro = parseFloat(nfeData.total.ICMSTot.vSeg || '0');
-        this.valorDesconto = parseFloat(nfeData.total.ICMSTot.vDesc || '0');
-        this.valorOutros = parseFloat(nfeData.total.ICMSTot.vOutro || '0');
-        this.valorTotalTributos = parseFloat(nfeData.total.ICMSTot.vTotTrib);
-        this.valorNotaFiscal = parseFloat(nfeData.total.ICMSTot.vNF);
-    }
+  constructor(nfeData:{retorno: NotaFiscalDTO},cliente:Pessoa) {
+    const infNFe = nfeData.retorno.xml_nfe[0].nfeProc[0].NFe[0].infNFe[0];
+    const total = infNFe.total[0].ICMSTot[0];
+    this.cdPessoa = cliente;
+    this.cdErp = cliente.cdErp;
+    this.nrDocumento = infNFe.ide[0].nNF[0];
+    this.nrSerie = infNFe.ide[0].serie[0];
+    this.dtEmissao = new Date(infNFe.ide[0].dhEmi[0]);
+    this.vlTotal = parseFloat(total.vNF[0]);
+    this.tpNf = infNFe.ide[0].tpNF[0] === '1' ? 'Saída' : 'Entrada';
+    this.natOp = infNFe.ide[0].natOp[0];
+    this.xMotivo = nfeData.retorno.xml_nfe[0].nfeProc[0].protNFe[0].infProt[0].xMotivo[0]
+    this.xPag = infNFe.pag[0].detPag[0].tPag[0];
+    this.nrIde = infNFe.dest[0].CPF ? infNFe.dest[0].CPF[0] : infNFe.dest[0].CNPJ[0];
+    this.nomeCliente = infNFe.dest[0].xNome[0];
+    this.lagradouroCliente = `${infNFe.dest[0].enderDest[0].xLgr[0]} ${infNFe.dest[0].enderDest[0].nro[0]}`;
+    this.bairro = infNFe.dest[0].enderDest[0].xBairro[0];
+    this.cidade = infNFe.dest[0].enderDest[0].xMun[0];
+    this.uf = infNFe.dest[0].enderDest[0].UF[0];
+    this.cep = infNFe.dest[0].enderDest[0].CEP[0];
+    this.xml = JSON.stringify(nfeData.retorno.xml_nfe);
+    this.dsChaveNfe = nfeData.retorno.xml_nfe[0].nfeProc[0].protNFe[0].infProt[0].chNFe[0];
+    this.dtEntSai = new Date(infNFe.ide[0].dhSaiEnt[0]);
+    this.vlFrete = parseFloat(total.vFrete[0] || '0');
+    this.vlSeguro = parseFloat(total.vSeg[0] || '0');
+    this.vlReceitaBruta = parseFloat(total.vProd[0]);
+    this.vlReceitaLiquida = this.vlReceitaBruta - parseFloat(total.vDesc[0] || '0');
+    this.vlDesconto = parseFloat(total.vDesc[0] || '0');
+    this.vlCustoProduto = this.vlReceitaLiquida; // Placeholder: Use real calculation if available
+    this.vlLucroBruto = this.vlReceitaBruta - this.vlCustoProduto;
+    this.vlLucroLiquido = this.vlLucroBruto; // Placeholder: Use real calculation if available
+    this.vlDespesasOperacionais = 0; // Placeholder: Add real data
+    this.vlImpostosTotais = parseFloat(total.vICMS[0]) + parseFloat(total.vIPI[0] || '0') + parseFloat(total.vCOFINS[0] || '0') + parseFloat(total.vPIS[0] || '0');
+  }
 }
-export class ItemDocumentoFiscalDTO {
-    codigoProduto: string;    // Código do produto (cProd)
-    descricao: string;        // Descrição do produto (xProd)
-    ncm: string;              // Código NCM (NCM)
-    cfop: string;             // CFOP (CFOP)
-    quantidade: number;       // Quantidade (qCom)
-    unidade: string;          // Unidade de medida (uCom)
-    valorUnitario: number;    // Valor unitário do item (vUnCom)
-    valorTotal: number;       // Valor total do item (vProd)
-    valorAdicional: number;   // Valor adicional (frete, seguro, etc.)
-    descricaoComplementar: string; // Descrição complementar
-    valorCusto: number;       // Custo do item (vlCustoItem)
-    valorDesconto: number;    // Desconto aplicado ao item (vlDescontoItem)
-    valorImposto: number;     // Valor dos impostos aplicados (vlImpostoItem)
-    valorLucro: number;       // Lucro do item (vlLucroItem)
-    documentoFiscalId: number; // Relacionamento com DocumentoFiscal (cdDocumentoFiscal)
 
-    constructor(itemData: any) {
-        this.codigoProduto = itemData.prod.cProd;
-        this.descricao = itemData.prod.xProd;
-        this.ncm = itemData.prod.NCM;
-        this.cfop = itemData.prod.CFOP;
-        this.quantidade = parseFloat(itemData.prod.qCom);
-        this.unidade = itemData.prod.uCom;
-        this.valorUnitario = parseFloat(itemData.prod.vUnCom);
-        this.valorTotal = parseFloat(itemData.prod.vProd);
-        this.valorAdicional = parseFloat(itemData.prod.vFrete || '0'); // Usado para valores adicionais
-        this.descricaoComplementar = itemData.prod.xPed || ''; // Se houver uma descrição complementar
-        this.valorCusto = 0; // Esse valor será calculado e preenchido posteriormente
-        this.valorDesconto = parseFloat(itemData.prod.vDesc || '0');
-        this.valorImposto = parseFloat(itemData.imposto.vTotTrib || '0');
-        this.valorLucro = 0; // Esse valor será calculado e preenchido posteriormente
-        this.documentoFiscalId = 0; // Será atribuído posteriormente
+//Você Parou aqui filão 
+
+export class ItemDocumentoFiscalDTO {
+  dtEmissao:string;
+  nrDocumento:string;
+  cProd: string;    // Código do produto (cProd)
+  xProd: string;        // Descrição do produto (xProd)
+  uCom: string;            
+  qCom: string;            
+  vUnCom: number;       //Quantidade comercial
+  vProd: number;          //Valor total
+   
+
+    constructor(nf:{retorno: NotaFiscalDTO},itemNf: Det) {
+
+      const infNFe = nf.retorno.xml_nfe[0].nfeProc[0].NFe[0].infNFe[0];
+      this.dtEmissao = `${new Date(infNFe.ide[0].dhEmi[0])}`;  
+      this.nrDocumento = infNFe.ide[0].nNF[0]
+      this.cProd = itemNf.prod[0].cProd[0];
+      this.xProd = itemNf.prod[0].xProd[0];
+      this.uCom = itemNf.prod[0].uCom[0];
+      this.qCom = itemNf.prod[0].qCom[0];
+      this.vUnCom = parseFloat(itemNf.prod[0].vUnCom[0]);
+      this.vProd = parseFloat(itemNf.prod[0].vProd[0]);
     }
 }
 
@@ -90,36 +100,12 @@ export class ItemDocumentoFiscalDTO {
 
 
 export class ImpostoDTO {
-    icmsBaseCalculo: number;
-    icmsValor: number;
-    icmsSTBaseCalculo: number;
-    icmsSTValor: number;
-    ipiBaseCalculo: number;
-    ipiValor: number;
-    pisBaseCalculo: number;
-    pisValor: number;
-    cofinsBaseCalculo: number;
-    cofinsValor: number;
+  cdImposto:TipoImposto
+  vlImposto:number
 
-    // Campos adicionais para totalização de impostos
-    vlImposto: number;
-    vlBaseCalculo: number;
-
-    constructor(impostoData: any) {
-        this.icmsBaseCalculo = parseFloat(impostoData.ICMS.ICMS70.vBC);
-        this.icmsSTBaseCalculo = parseFloat(impostoData.ICMS.ICMS70.vBCST);
-        this.icmsValor = parseFloat(impostoData.ICMS.ICMS70.vICMS);
-        this.icmsSTValor = parseFloat(impostoData.ICMS.ICMS70.vICMSST);
-        this.ipiBaseCalculo = parseFloat(impostoData.IPI.IPITrib.vBC);
-        this.ipiValor = parseFloat(impostoData.IPI.IPITrib.vIPI);
-        this.pisBaseCalculo = parseFloat(impostoData.PIS.PISAliq.vBC);
-        this.pisValor = parseFloat(impostoData.PIS.PISAliq.vPIS);
-        this.cofinsBaseCalculo = parseFloat(impostoData.COFINS.COFINSAliq.vBC);
-        this.cofinsValor = parseFloat(impostoData.COFINS.COFINSAliq.vCOFINS);
-
-        // Cálculo total de base e imposto
-        this.vlImposto = this.icmsValor + this.icmsSTValor + this.ipiValor + this.pisValor + this.cofinsValor;
-        this.vlBaseCalculo = this.icmsBaseCalculo + this.icmsSTBaseCalculo + this.ipiBaseCalculo + this.pisBaseCalculo + this.cofinsBaseCalculo;
+    constructor(
+      calculoImposto:any,) {
+        Object.assign(this,calculoImposto)
     }
 }
 
@@ -149,140 +135,281 @@ export class FluxoCaixaDTO {
 }
 
 
-    export interface RespostaDTO {
-        status_processamento: string;
-        status: string;
-        nota_fiscal: NotaFiscalDTO;
-    }
-  
-  export interface NotaFiscalDTO {
-    id: string;
-    tipo_nota: string;
-    natureza_operacao: string | null;
-    regime_tributario: string;
-    finalidade: string;
-    serie: string;
-    numero: string;
-    numero_ecommerce: string;
-    data_emissao: string;
-    data_saida: string;
-    hora_saida: string;
-    cliente: ClienteDTO;
-    endereco_entrega: EnderecoEntregaDTO;
-    itens: ItemWrapperDTO[];
-    base_icms: string;
-    valor_icms: string;
-    base_icms_st: string;
-    valor_icms_st: string;
-    valor_servicos: string;
-    valor_produtos: string;
-    valor_frete: string;
-    valor_seguro: string;
-    valor_outras: string;
-    valor_ipi: string;
-    valor_issqn: string;
-    valor_nota: string;
-    valor_desconto: string;
-    valor_faturado: string;
-    frete_por_conta: string;
-    transportador: TransportadorDTO;
-    placa: string;
-    uf_placa: string;
-    quantidade_volumes: string;
-    especie_volumes: string;
-    marca_volumes: string;
-    numero_volumes: string;
-    peso_bruto: string;
-    peso_liquido: string;
-    forma_envio: FormaEnvioDTO;
-    codigo_rastreamento: string;
-    url_rastreamento: string;
-    condicao_pagamento: string;
-    forma_pagamento: string;
-    meio_pagamento: string | null;
-    parcelas: ParcelaWrapperDTO[];
-    id_vendedor: string | null;
-    nome_vendedor: string;
-    situacao: string;
-    descricao_situacao: string;
-    obs: string;
-    marcadores: any[];
-  }
-  
-  export interface ClienteDTO {
-    nome: string;
-    tipo_pessoa: string;
-    cpf_cnpj: string;
-    ie: string;
-    endereco: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cep: string;
-    cidade: string;
-    uf: string;
-    fone: string;
-    email: string;
-  }
-  
-  export interface EnderecoEntregaDTO {
-    tipo_pessoa: string;
-    cpf_cnpj: string;
-    ie: string;
-    endereco: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cep: string;
-    cidade: string;
-    uf: string;
-    fone: string;
-    nome_destinatario: string;
-  }
-  
-  export interface ItemWrapperDTO {
-    item: ItemDTO;
-  }
-  
-  export interface ItemDTO {
-    id_produto: string;
-    codigo: string;
-    descricao: string;
-    unidade: string;
-    ncm: string;
-    quantidade: string;
-    valor_unitario: string;
-    valor_total: string;
-    cfop: string;
-    natureza: string | null;
-  }
-  
-  export interface TransportadorDTO {
-    nome: string;
-    cpf_cnpj: string;
-    ie: string;
-    endereco: string;
-    cidade: string;
-    uf: string;
-  }
-  
-  export interface FormaEnvioDTO {
-    id: string;
-    descricao: string;
-  }
-  
-  export interface ParcelaWrapperDTO {
-    parcela: ParcelaDTO;
-  }
-  
-  export interface ParcelaDTO {
-    dias: string;
-    data: string;
-    valor: string;
-    obs: string;
-    forma_pagamento: string;
-    meio_pagamento: string | null;
-  }
+export interface NotaFiscalDTO {
+  status_processamento: string[];
+  status: string[];
+  xml_nfe: XmlNfe[];
+}
+
+export interface XmlNfe {
+  nfeProc: NfeProc[];
+}
+
+export interface NfeProc {
+  $: {
+    xmlns: string;
+    versao: string;
+  };
+  NFe: NFe[];
+  protNFe: ProtNFe[];  // Adicionado 'protNFe'
+}
+
+export interface NFe {
+  $: {
+    xmlns: string;
+  };
+  infNFe: InfNFe[];
+}
+
+export interface InfNFe {
+  $: {
+    versao: string;
+    Id: string;
+  };
+  ide: Ide[];
+  emit: Emit[];
+  dest: Dest[];
+  det: Det[];
+  total: Total[];
+  transp: Transp[];
+  pag: Pag[];
+  infAdic: InfAdic[];
+  compra: Compra[];
+  infRespTec: InfRespTec[];
+}
+
+export interface Ide {
+  cUF: string[];
+  cNF: string[];
+  natOp: string[];
+  mod: string[];
+  serie: string[];
+  nNF: string[];
+  dhEmi: string[];
+  dhSaiEnt: string[];
+  tpNF: string[];
+  idDest: string[];
+  cMunFG: string[];
+  tpImp: string[];
+  tpEmis: string[];
+  cDV: string[];
+  tpAmb: string[];
+  finNFe: string[];
+  indFinal: string[];
+  indPres: string[];
+  indIntermed: string[];
+  procEmi: string[];
+  verProc: string[];
+  NFref: NFref[];
+}
+
+export interface NFref {
+  refNFe: string[];
+}
+
+export interface Emit {
+  CNPJ: string[];
+  xNome: string[];
+  xFant: string[];
+  enderEmit: EnderEmit[];
+  IE: string[];
+  IM: string[];
+  CNAE: string[];
+  CRT: string[];
+}
+
+export interface EnderEmit {
+  xLgr: string[];
+  nro: string[];
+  xBairro: string[];
+  cMun: string[];
+  xMun: string[];
+  UF: string[];
+  CEP: string[];
+  cPais: string[];
+  xPais: string[];
+  fone: string[];
+}
+
+export interface Dest {
+  CPF?: string[];
+  CNPJ?: string[];
+  xNome: string[];
+  enderDest: EnderDest[];
+  indIEDest: string[];
+}
+
+export interface EnderDest {
+  xLgr: string[];
+  nro: string[];
+  xBairro: string[];
+  cMun: string[];
+  xMun: string[];
+  UF: string[];
+  CEP: string[];
+  cPais: string[];
+  xPais: string[];
+}
+
+export interface Det {
+  $: {
+    nItem: string;
+  };
+  prod: Prod[];
+  imposto: Imposto[];
+}
+
+export interface Prod {
+  cProd: string[];
+  cEAN: string[];
+  xProd: string[];
+  NCM: string[];
+  CFOP: string[];
+  uCom: string[];
+  qCom: string[];
+  vUnCom: string[];
+  vProd: string[];
+  cEANTrib: string[];
+  uTrib: string[];
+  qTrib: string[];
+  vUnTrib: string[];
+  indTot: string[];
+}
+
+export interface Imposto {
+  ICMS: ICMS[];
+  IPI: IPI[];
+  PIS: PIS[];
+  COFINS: COFINS[];
+}
+
+export interface ICMS {
+  ICMS00: ICMS00[];
+}
+
+export interface ICMS00 {
+  orig: string[];
+  CST: string[];
+  modBC: string[];
+  vBC: string[];
+  pICMS: string[];
+  vICMS: string[];
+}
+
+export interface IPI {
+  cEnq: string[];
+  IPINT: IPINT[];
+}
+
+export interface IPINT {
+  CST: string[];
+}
+
+export interface PIS {
+  PISNT: PISNT[];
+}
+
+export interface PISNT {
+  CST: string[];
+}
+
+export interface COFINS {
+  COFINSNT: COFINSNT[];
+}
+
+export interface COFINSNT {
+  CST: string[];
+}
+
+export interface Total {
+  ICMSTot: ICMSTot[];
+}
+
+export interface ICMSTot {
+  vBC: string[];
+  vICMS: string[];
+  vICMSDeson: string[];
+  vFCPUFDest: string[];
+  vICMSUFDest: string[];
+  vICMSUFRemet: string[];
+  vFCP: string[];
+  vBCST: string[];
+  vST: string[];
+  vFCPST: string[];
+  vFCPSTRet: string[];
+  vProd: string[];
+  vFrete: string[];
+  vSeg: string[];
+  vDesc: string[];
+  vII: string[];
+  vIPI: string[];
+  vIPIDevol: string[];
+  vPIS: string[];
+  vCOFINS: string[];
+  vOutro: string[];
+  vNF: string[];
+}
+
+export interface Transp {
+  modFrete: string[];
+  vol: Vol[];
+}
+
+export interface Vol {
+  qVol: string[];
+  pesoL: string[];
+  pesoB: string[];
+}
+
+export interface Pag {
+  detPag: DetPag[];
+}
+
+export interface DetPag {
+  tPag: string[];
+  vPag: string[];
+}
+
+export interface InfAdic {
+  infCpl: string[];
+}
+
+export interface Compra {
+  xPed: string[];
+}
+
+export interface InfRespTec {
+  CNPJ: string[];
+  xContato: string[];
+  email: string[];
+  fone: string[];
+}
+
+export interface ProtNFe {
+  $: {
+    versao: string;
+  };
+  infProt: InfProt[];
+}
+
+export interface InfProt {
+  tpAmb: string[];
+  verAplic: string[];
+  chNFe: string[];
+  dhRecbto: string[];
+  nProt: string[];
+  digVal: string[];
+  cStat: string[];
+  xMotivo: string[];
+}
+
+
+
+
+
+
+
+
   
 
 
