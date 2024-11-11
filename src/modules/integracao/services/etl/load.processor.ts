@@ -36,20 +36,14 @@ export class LoadProcessor extends WorkerHost{
     async process(job: Job<LoadDTO>): Promise<any> {
         
         const {nota,item,imposto,erp}  = job.data;
+        
+        this.logger.log(`Processo de carga iniciado para o job`);
 
         try {
            
             if (erp === 'Tiny') {
                  await this.documentoFiscalService.loadData(nota,item,imposto);
-                
-            } /* else if (erp === 'omie') {
-                await this.processarNotasOmie(cliente);
-            } else {
-                throw new Error('ERP não suportado');
-            }*/ 
-    
-           // await this.transformQueue.add('transform-job', { client, TransformedData });
-            this.logger.log(`Extração concluída e adicionada à fila de transformação para cliente`);
+            }
           } catch (error) {
             this.logger.error(`Erro ao extrair dados do cliente: ${error.message}`);
             throw error;

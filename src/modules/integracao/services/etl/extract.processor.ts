@@ -40,15 +40,15 @@ export class ExtractProcessor extends WorkerHost{
 
         try {
             this.logger.log(`Iniciando extração para o cliente ${client} e ERP ${erp}`);
-            /* const extractedData = */ 
-
-            if (erp === 'Tiny') {
+           if (erp === 'Tiny') {
+                await this.documentoFiscalService.limparSchema()
                 await this.documentoFiscalService.extractNotasTiny(client);
-            } /* else if (erp === 'omie') {
-                await this.processarNotasOmie(cliente);
+            }  else if (erp === 'Omie') {
+                await this.documentoFiscalService.limparSchema()
+                await this.documentoFiscalService.extractNotasOmie(client,'ListarDocumentos');
             } else {
                 throw new Error('ERP não suportado');
-            }*/ 
+            }
     
            // await this.transformQueue.add('transform-job', { client, extractedData });
             this.logger.log(`Extração concluída e adicionada à fila de transformação para cliente ${client}`);

@@ -19,7 +19,7 @@ export const LINKSINTEGRATION = {
     TINY_GET_ALL_DOCUMENTS:'https://api.tiny.com.br/api2/notas.fiscais.pesquisa.php',
     TINY_GET_DOCUMENT_DETAIL:'https://api.tiny.com.br/api2/nota.fiscal.obter.xml.php',
 
-    OMIE_GET_DOCUMENT:'https://app.omie.com.br/api/v1/contador/xml',
+    OMIE_GET_DOCUMENT:'https://app.omie.com.br/api/v1/contador/xml/',
 
     /* 
     Oferecer melhoria:

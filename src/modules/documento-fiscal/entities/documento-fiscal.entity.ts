@@ -37,7 +37,7 @@ export class DocumentoFiscal {
   @Column({ type: 'varchar', length: 200 }) //Descrição literal do status da nota 
   xMotivo: string;
 
-  @Column({ type: 'varchar', length: 200 }) //Forma / Canal de pagamento 
+  @Column({ type: 'varchar', length: 200, nullable:true }) //Forma / Canal de pagamento 
   xPag: string;
 
 
@@ -66,7 +66,7 @@ export class DocumentoFiscal {
   cep: string;
 
 
-  @Column({ type: 'varchar', length: 1000000 })
+  @Column({ type: 'varchar', length: 1000000,nullable:true })
   xml: string;
 
   @Column({ type: 'varchar', length: 50 })

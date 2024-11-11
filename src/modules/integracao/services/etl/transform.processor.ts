@@ -24,7 +24,7 @@ export class TransformProcessor extends WorkerHost{
     @OnWorkerEvent('active')
     onActive(job: Job) {
         this.logger.log(
-        `Processing job ${job.id} of type ${job.name} with data ${job.data}...`,
+        `Processando o job ${job.id} of type ${job.name}`,
     );
     }
 
@@ -39,9 +39,7 @@ export class TransformProcessor extends WorkerHost{
         const {token,data,cliente, erp}  = job.data;
 
         try {
-            this.logger.log(`Iniciando extração para o cliente ${data} e ERP ${erp}`);
-            /* const TransformedData = */ 
-
+          
             if (erp === 'Tiny') {
                 const {nota,item,imposto} = await this.documentoFiscalService.transformNotasTiny(data,token,cliente);
                await this.loadQueueformQueue.add('load-df-tiny',{
@@ -61,7 +59,6 @@ export class TransformProcessor extends WorkerHost{
             }*/ 
     
            // await this.transformQueue.add('transform-job', { client, TransformedData });
-            this.logger.log(`Extração concluída e adicionada à fila de transformação para cliente ${data}`);
           } catch (error) {
             this.logger.error(`Erro ao extrair dados do cliente ${data}: ${error.message}`);
             throw error;

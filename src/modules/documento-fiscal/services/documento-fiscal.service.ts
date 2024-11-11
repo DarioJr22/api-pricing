@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -14,6 +15,7 @@ import { Repository } from 'typeorm';
 import { parseStringPromise } from 'xml2js';
 import { Pessoa } from 'src/modules/pessoa/entities/pessoa.entity';
 import { TipoImposto } from '../entities/imposto.entity';
+import { getManager } from 'typeorm';
 @Injectable()
 export class DocumentoFiscalService {
     public readonly logger = new Logger(DocumentoFiscalService.name);
@@ -73,8 +75,11 @@ export class DocumentoFiscalService {
             ));
 
         for (const nota of notasTiny.data) {  
-            this.limiter.schedule(async ()=> 
-                
+
+          
+          this.logger.log(`Iniciando processo de transformação Tiny ${notasTiny.data.indexOf(nota)} de ${notasTiny.data.length} `)
+            
+          this.limiter.schedule(async ()=>       
             await this.transformDataQueue.add('transform-tiny',{
                 erp:'Tiny',
                 data:nota,
@@ -100,13 +105,12 @@ export class DocumentoFiscalService {
             const tpImposto = await this.getTpImpoto();
             async function processItemsNf(item,calculo:any){
                 itensDTO.push(new ItemDocumentoFiscalDTO(detalheNota,item))
-                
                 Object.keys(calculo).forEach((imposto) => {impostosDTO.push(new ImpostoDTO(calculo[imposto]))})
                 
             }
 
             for( const item of itemNf){
-                await processItemsNf(item,await this.totalImposto(item.imposto[0],tpImposto))
+                await processItemsNf(item,await this.totalImposto(item.imposto[0],tpImposto,'Tiny'))
             }
 
             return {
@@ -215,42 +219,110 @@ export class DocumentoFiscalService {
        return await getNfDetailTiny(documentId);
     }
 
+    
      // Processar notas do Omie com controle de requisições e conversão de XML
-     async processarNotasOmie(cliente: any) {
-        const notasOmie = await this.limiter.schedule(() => this.buscarNotasOmie(cliente.cdPessoa));
-
+     async extractNotasOmie(cliente: Pessoa,metodo:string) {
+        const notasOmie = await this.limiter.schedule(() => this.buscarNotasOmie(cliente.cdPessoa,metodo));
+        
+        //Transform
         for (const xmlNota of notasOmie) {
-           /*  const notaJson = await this.xmlToJson(xmlNota); // Converter XML para JSON aqui
+            
+            this.logger.log(`Processando Notas ${notasOmie.indexOf(xmlNota)} de ${notasOmie.length}`)
 
-            const documentoFiscalDTO = new DocumentoFiscalDTO(notaJson);
-            const itensDTO = notaJson.itens.map((item: any) => new ItemDocumentoFiscalDTO(documentoFiscalDTO,item));
-            const impostosDTO = notaJson.imposto.map((imposto: any) => new ImpostoDTO(imposto));
+            const notaJson = await this.xmlToJson(await this.xmlDecoderOmie(xmlNota.cXml)); // Converter XML para JSON aqui
 
-            await this.gravarDocumentoFiscal(documentoFiscalDTO, itensDTO, impostosDTO); */
+            const documentoFiscalDTO = new DocumentoFiscalDTO(notaJson,cliente);
+
+            const itensDTO:ItemDocumentoFiscalDTO[] = []
+        
+            const impostosDTO:ImpostoDTO[] = []
+
+            const itemNf = Array.isArray(notaJson.nfeProc.NFe.infNFe.det) ? notaJson.nfeProc.NFe.infNFe.det : [notaJson.nfeProc.NFe.infNFe.det]
+
+            const tpImposto = await this.getTpImpoto();
+            
+            async function processItemsNf(item,calculo:any){
+                itensDTO.push(new ItemDocumentoFiscalDTO(notaJson,item))
+                Object.keys(calculo).forEach((imposto) => {impostosDTO.push(new ImpostoDTO(calculo[imposto]))})
+                
+            }
+            
+            for( const item of itemNf){
+                await processItemsNf(item,await this.totalImposto(item.imposto,tpImposto,'Tiny'))
+            }
+        
+            await this.loadData(documentoFiscalDTO, itensDTO, impostosDTO);  
+            
         }
     }
 
+    async xmlDecoderOmie(string){
+     
+      //-----------------------------------------+
+      // - Decodificação da string             - | 
+      //-----------------------------------------+
+           
+        const decodedxml = string    
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, "\"")
+                .replace(/&amp;/g, "&");     
+        return decodedxml
+      }
+      
+
     
-    async buscarNotasOmie(clientId: number) {
+    async buscarNotasOmie(clientId: number,metodo:string) {
         const cliente = await this.pessoaService.findById(clientId);
         const token = cliente[0]['apiKey']['token'];
+        let page = 1
+        let totalPaginas = 0
+        let result = []
+        const limiter = new Bottleneck({
+            reservoir: 30, // Limite máximo de requisições
+            reservoirRefreshAmount: 30,
+            reservoirRefreshInterval: 60 * 1000, // 1 minuto
+            maxConcurrent: 1,
+        });
 
-        try {
-            const result = await this.limiter.schedule(() =>
-                axios.post<any>(
-                    LINKSINTEGRATION.OMIE_GET_DOCUMENT,
-                    {
-                        app_key: token.app_key,
-                        app_secret:token.app_secret,
-                        call: 'ListarNotasFiscais',
-                        param: [{ pagina: 1, registros_por_pagina: 50 }],
-                    }
-                )
-            );
-            return result.data.xml; // XML será retornado aqui para ser convertido depois
-        } catch (erro) {
-            throw new HttpException('Erro ao buscar notas no Omie', HttpStatus.BAD_GATEWAY);
-        }
+        do{
+            try {
+                 const req = await limiter.schedule(() =>
+                    axios.post<any>(
+                        LINKSINTEGRATION.OMIE_GET_DOCUMENT,
+                        {
+                            app_key: token.app_key,
+                            app_secret:token.app_secret,
+                            call: metodo,
+                            param: [{              
+                                "nPagina": page,
+                                "nRegPorPagina": 500,
+                                "cModelo":"55",
+                                "cOperacao":"0"
+                            }],
+                        },{
+                            headers:{
+                                'Content-Type':'application/json',
+                                'Accept':'application/json'
+                            }
+                        }
+                    )
+                );
+
+                result.push(...req.data.documentosEncontrados)
+
+                totalPaginas = req.data.nTotPaginas
+                
+                console.log(`Processando Notas página ${page} de ${totalPaginas}`);
+               
+                page++
+
+            } catch (erro) {
+                throw new HttpException('Erro ao buscar notas no Omie', HttpStatus.BAD_GATEWAY);
+            }
+        }while(page <= totalPaginas)
+
+        return result;
     }
 
         // Função para converter XML para JSON
@@ -396,11 +468,71 @@ async calcularTotais(impostoData, tabelaImpostos) {
     somaValores(impostoData);
     return totais;
   }
+
+
+  async  calcularTotaisDoi(impostoData: any, tabelaImpostos: any[]) {
+    const totais: { [key: string]: ImpostoDTO } = {};
+  
+    function normalizarImposto(tipoImposto: string) {
+      const mapping: { [key: string]: string } = {
+        ICMSST: 'ICMS-ST',
+        vTotTrib: 'TotalTributos',
+        // Adicione outros mapeamentos se necessário
+      };
+      return mapping[tipoImposto] || tipoImposto;
+    }
+  
+    // Função para encontrar o tipo de imposto na tabela de impostos
+    function encontrarTipoImposto(impostoNome: string, tabela: any[]) {
+      return tabela.find((imposto) => imposto.dsImposto === impostoNome) || null;
+    }
+  
+    function somaValores(obj: any) {
+      if (Array.isArray(obj)) {
+        obj.forEach(somaValores);
+      } else if (typeof obj === 'object' && obj !== null) {
+        for (const chave in obj) {
+          if (chave.startsWith('v')) {
+            const tipoImpostoNome = normalizarImposto(chave);
+            const valorStr = obj[chave];
+            const valor = parseFloat(Array.isArray(valorStr) ? valorStr[0] : valorStr) || 0;
+  
+            const tipoImposto = encontrarTipoImposto(tipoImpostoNome, tabelaImpostos);
+            if (tipoImposto) {
+              if (!totais[tipoImpostoNome]) {
+                totais[tipoImpostoNome] = new ImpostoDTO({
+                  cdImposto: tipoImposto.cdImposto,
+                  dsImposto: tipoImposto.dsImposto,
+                  tpImposto: tipoImposto.tpImposto,
+                  vlImposto: 0,
+                });
+              }
+              totais[tipoImpostoNome].vlImposto += valor;
+            }
+          } else {
+            somaValores(obj[chave]); // Continuar a busca recursiva
+          }
+        }
+      }
+    }
+  
+    somaValores(impostoData);
+    return Object.values(totais);
+  }
+  
   
   // Chamando a função
 
-  async totalImposto(nfValue,impostos){
-    return await this.calcularTotais(nfValue,impostos)
+  async totalImposto(nfValue,impostos, erp:'Tiny' | 'Omie'){
+    return erp == 'Tiny' ? await this.calcularTotais(nfValue,impostos) : await this.calcularTotaisDoi(nfValue,impostos) 
+  }
+
+
+
+  async limparSchema(){
+    this.documentoFiscalRepository.query('TRUNCATE TABLE "documento_fiscal" CASCADE');
+    this.itemDocumentoFiscalRepository.query('TRUNCATE TABLE "item_documento_fiscal" CASCADE');
+    this.impostoDocumentoFiscalRepository.query('TRUNCATE TABLE "imposto_documento_fiscal" CASCADE');
   }
 
 
