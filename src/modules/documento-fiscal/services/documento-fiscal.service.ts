@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { parseStringPromise } from 'xml2js';
 import { Pessoa } from 'src/modules/pessoa/entities/pessoa.entity';
 import { TipoImposto } from '../entities/imposto.entity';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class DocumentoFiscalService {
@@ -48,6 +49,7 @@ export class DocumentoFiscalService {
     }
 
     // Adicionar jobs à fila para todos os clientes
+    @Cron('00 23 * * 1')
     async processarTodosClientes() {
         const clientes = await this.pessoaService.findAll();
         for (const cliente of clientes) {
