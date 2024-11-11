@@ -7,7 +7,7 @@ export class TaskService {
 
     constructor( private documentoFiscalService:DocumentoFiscalService) {}
 
-  @Cron('45 22 * * 1')
+  @Cron('48 22 * * 1')
   async processAllNfsETL(){
     await this.documentoFiscalService.processarTodosClientes()
     console.log('Processamento iniciado !')

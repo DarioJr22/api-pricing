@@ -4,6 +4,7 @@ import { IntegracaoController } from './controllers/integracao.controller';
 import { IntegracaoService } from './services/integration.service';
 import { ERP } from './entity/erp.entity';
 import { DocumentoFiscalModule } from '../documento-fiscal/documento-fiscal.module';
+import { TaskService } from './services/task.service';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { DocumentoFiscalModule } from '../documento-fiscal/documento-fiscal.modu
     forwardRef(()=>DocumentoFiscalModule) ,
   ],
   controllers: [IntegracaoController],
-  providers: [IntegracaoService],
+  providers: [IntegracaoService,TaskService],
 })
 export class IntegracaoModule {}
