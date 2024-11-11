@@ -13,15 +13,27 @@ import { PessoaService } from './modules/pessoa/services/pessoa.service';
 import { ExtractProcessor } from './modules/integracao/services/etl/extract.processor';
 import { TransformProcessor } from './modules/integracao/services/etl/transform.processor';
 import { LoadProcessor } from './modules/integracao/services/etl/load.processor';
+import Redis from 'ioredis';
+import * as dotenv from 'dotenv';
+dotenv.config()
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeOrmConfig),
-    BullModule.forRoot({
-      connection:{
-        host:process.env.REDIS_HOST,
-        port:6379
-      }
-    }),
+      //Dev 
+      /*  BullModule.forRoot({
+        connection:{
+          host:process.env.REDIS_HOST,
+          port:6379
+        }
+      }) */
+     //prod
+      BullModule.forRoot({
+        connection: new Redis(`${process.env.REDIS_URL}?family=0`,
+          {
+            maxRetriesPerRequest:null
+          }
+        ),
+      }),
     BullModule.registerQueue(
       {name: 'extract'},
       {name:'transform'},
