@@ -13,10 +13,11 @@ export class AppController {
     return this.appService.getHello();
   }
 
+
+  
+
   @Get('nfe')
   buscarnotas(){
-
-
       this.documentoFiscalService.processarTodosClientes()
       return {
           retorno:'Deu certo !'

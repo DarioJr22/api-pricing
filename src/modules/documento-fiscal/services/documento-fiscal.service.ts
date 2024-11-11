@@ -15,7 +15,7 @@ import { Repository } from 'typeorm';
 import { parseStringPromise } from 'xml2js';
 import { Pessoa } from 'src/modules/pessoa/entities/pessoa.entity';
 import { TipoImposto } from '../entities/imposto.entity';
-import { getManager } from 'typeorm';
+
 @Injectable()
 export class DocumentoFiscalService {
     public readonly logger = new Logger(DocumentoFiscalService.name);

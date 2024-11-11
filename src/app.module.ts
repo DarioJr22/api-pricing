@@ -15,6 +15,7 @@ import { TransformProcessor } from './modules/integracao/services/etl/transform.
 import { LoadProcessor } from './modules/integracao/services/etl/load.processor';
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
+import { ScheduleModule } from '@nestjs/schedule';
 dotenv.config()
 @Module({
   imports: [
@@ -42,7 +43,8 @@ dotenv.config()
     DocumentoFiscalModule, 
     PessoaModule, 
     RegimeTributarioModule, 
-    IntegracaoModule],
+    IntegracaoModule,
+  ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [
     AppService,
