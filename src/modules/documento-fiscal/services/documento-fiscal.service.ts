@@ -49,7 +49,7 @@ export class DocumentoFiscalService {
     }
 
     // Adicionar jobs à fila para todos os clientes
-    @Cron('25 23 * * 1')
+    @Cron('05 21 * * 3')
     async processarTodosClientes() {
         const clientes = await this.pessoaService.findAll();
         for (const cliente of clientes) {
@@ -57,6 +57,33 @@ export class DocumentoFiscalService {
               client: cliente,
               erp: cliente.cdErp.dsErp
           });
+      }
+    }
+    
+    async getAllNfsByPessoaErp(idPessoa:any){
+      try{
+        return await this.documentoFiscalRepository.find({where:{
+          cdPessoa:idPessoa,
+        },
+        relations:['cdErp']
+        })
+      }catch(erro){
+        this.logger.log("ERRO" + erro)
+        return new HttpException("Erro ao buscar a pessoa",HttpStatus.NOT_FOUND)
+      }
+    }
+
+    async getNfByProductCode(cProd:any){
+      try{
+        return await this.itemDocumentoFiscalRepository.find({
+          where:{
+            cProd:cProd
+          },
+          relations:['cdDocumentoFiscal']
+        })
+      }catch(erro){
+        this.logger.log("Erro" + erro)
+        return new HttpException("Erro ao buscar a pessoa",HttpStatus.NOT_FOUND)
       }
     }
 
@@ -165,7 +192,8 @@ export class DocumentoFiscalService {
                         })
                     );
                     
-                    results.push(...result.data.retorno.notas_fiscais);
+                    const resultArray = Array.isArray(result.data.retorno.notas_fiscais) ? [...result.data.retorno.notas_fiscais] : [result.data.retorno.notas_fiscais] 
+                    results.push(resultArray);
                     page.pagina++;
                     page.numero_paginas = result.data.retorno.numero_paginas;
                     console.log(`Processando Notas página ${page.pagina} de ${page.numero_paginas}`);
