@@ -49,7 +49,7 @@ export class DocumentoFiscalService {
     }
 
     // Adicionar jobs à fila para todos os clientes
-    @Cron('30 09 * * 4')
+    @Cron('36 09 * * 4')
     async processarTodosClientes() {
         const clientes = await this.pessoaService.findAll();
         for (const cliente of clientes) {
