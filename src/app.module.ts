@@ -16,6 +16,7 @@ import { LoadProcessor } from './modules/integracao/services/etl/load.processor'
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
 import { ScheduleModule } from '@nestjs/schedule';
+import { DocumentoFiscalController } from './modules/documento-fiscal/controllers/documento-fiscal.controller';
 dotenv.config()
 @Module({
   imports: [
@@ -45,7 +46,7 @@ dotenv.config()
     RegimeTributarioModule, 
     IntegracaoModule,
   ScheduleModule.forRoot()],
-  controllers: [AppController],
+  controllers: [AppController,DocumentoFiscalController],
   providers: [
     AppService,
     DocumentoFiscalService,
