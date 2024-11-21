@@ -19,8 +19,8 @@ export class DocumentoFiscalController {
     }
 
     @Get('nf/client/:id')
-    async processClient(@Param('id') cdItem:string){
-        return this.documentoFiscalService.getNfByProductCode(cdItem)
+    async processClient(@Param('id') cd:number){
+        return this.documentoFiscalService.processarClienteEspecifico(cd)
     }
 
     
