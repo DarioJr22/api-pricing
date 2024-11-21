@@ -10,6 +10,7 @@ import { FluxoCaixa } from './entities/fluxo-caixa.entity';
 import { IntegracaoModule } from '../integracao/integracao.module';
 import { TipoImposto } from './entities/imposto.entity';
 import { DocumentoFiscalController } from './controllers/documento-fiscal.controller';
+import { DocumentoFiscalService } from './services/documento-fiscal.service';
 
 @Module({
   imports:[
@@ -26,7 +27,7 @@ import { DocumentoFiscalController } from './controllers/documento-fiscal.contro
    ],
     
   controllers: [DocumentoFiscalController],
-  providers: [PessoaService ],
+  providers: [PessoaService,DocumentoFiscalService ],
   exports: [TypeOrmModule]
 })
 export class DocumentoFiscalModule {
