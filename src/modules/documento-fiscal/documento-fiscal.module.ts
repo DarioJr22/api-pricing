@@ -11,6 +11,8 @@ import { IntegracaoModule } from '../integracao/integracao.module';
 import { TipoImposto } from './entities/imposto.entity';
 import { DocumentoFiscalController } from './controllers/documento-fiscal.controller';
 import { DocumentoFiscalService } from './services/documento-fiscal.service';
+import { BullModule } from '@nestjs/bullmq';
+import Redis from 'ioredis';
 
 @Module({
   imports:[
@@ -24,6 +26,18 @@ import { DocumentoFiscalService } from './services/documento-fiscal.service';
       TipoImposto
     ]),
     forwardRef(() => IntegracaoModule), 
+    BullModule.forRoot({
+      connection: new Redis(`${process.env.REDIS_URL}?family=0`,
+        {
+          maxRetriesPerRequest:null
+        }
+      ),
+    }),
+  BullModule.registerQueue(
+    {name: 'extract'},
+    {name:'transform'},
+    {name:'load'}
+  ),
    ],
     
   controllers: [DocumentoFiscalController],
