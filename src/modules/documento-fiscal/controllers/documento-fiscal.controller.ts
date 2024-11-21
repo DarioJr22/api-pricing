@@ -1,11 +1,10 @@
-import { Body, Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DocumentoFiscalService } from '../services/documento-fiscal.service';
-import { ItemDocumentoFiscal } from '../entities/item-documento-fiscal.entity';
 
 @Controller('documento-fiscal')
 export class DocumentoFiscalController {
 
-
+/* Assim que terminar o recolhimento dos dados verificar esse endpoint funcionamento */
     constructor(private DocumentoFiscalService:DocumentoFiscalService){}
 
     @Get('nfs/:id')
@@ -18,6 +17,13 @@ export class DocumentoFiscalController {
     async getNfByItem(@Param('id') cdItem:string){
         return this.DocumentoFiscalService.getNfByProductCode(cdItem)
     }
+
+    @Get('nf/client/:id')
+    async processClient(@Param('id') cdItem:string){
+        return this.DocumentoFiscalService.getNfByProductCode(cdItem)
+    }
+
+    
 
 
    

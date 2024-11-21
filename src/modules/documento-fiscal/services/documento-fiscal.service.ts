@@ -59,6 +59,18 @@ export class DocumentoFiscalService {
           });
       }
     }
+
+
+    async processarClienteEspecifico(cdPessoa:number){
+      const cliente = await this.pessoaService.findById(cdPessoa);
+
+      if(!(cliente instanceof HttpException)){
+          await this.extractDataQueue.add('extract', {
+              client: cliente[0],
+              erp: cliente[0].cdErp.dsErp
+          });
+      }
+      }
     
     async getAllNfsByPessoaErp(idPessoa:any){
       try{

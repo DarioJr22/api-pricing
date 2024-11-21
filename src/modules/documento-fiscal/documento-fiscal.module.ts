@@ -9,6 +9,7 @@ import { ImpostoDocumentoFiscal } from './entities/imposto-documento-fiscal.enti
 import { FluxoCaixa } from './entities/fluxo-caixa.entity';
 import { IntegracaoModule } from '../integracao/integracao.module';
 import { TipoImposto } from './entities/imposto.entity';
+import { DocumentoFiscalController } from './controllers/documento-fiscal.controller';
 
 @Module({
   imports:[
@@ -24,7 +25,7 @@ import { TipoImposto } from './entities/imposto.entity';
     forwardRef(() => IntegracaoModule), 
    ],
     
-  controllers: [],
+  controllers: [DocumentoFiscalController],
   providers: [PessoaService ],
   exports: [TypeOrmModule]
 })
