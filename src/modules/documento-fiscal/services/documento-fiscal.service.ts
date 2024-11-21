@@ -85,6 +85,37 @@ export class DocumentoFiscalService {
       }
     }
 
+    async getItemsByPessoa(idPessoa:any){
+      try{
+
+     
+  
+        return await this.itemDocumentoFiscalRepository
+        .createQueryBuilder('itemDocumentoFiscal')
+        .leftJoinAndSelect('itemDocumentoFiscal.cdDocumentoFiscal', 'documentoFiscal')
+        .where('documentoFiscal.cdPessoa = :idPessoa', { idPessoa })
+        .getMany();
+      }catch(erro){
+        this.logger.log("ERRO" + erro)
+        return new HttpException("Erro ao buscar a items",HttpStatus.NOT_FOUND)
+      }
+    }
+
+    async getImpostoByPessoa(idPessoa:any){
+      try{  
+        return await this.impostoDocumentoFiscalRepository
+        .createQueryBuilder('ImpostoDocumentoFiscal')
+        .leftJoinAndSelect('ImpostoDocumentoFiscal.cdItemDocumentoFiscal', 'itemDocumentoFiscal')
+        .leftJoinAndSelect('itemDocumentoFiscal.cdDocumentoFiscal', 'documentoFiscal')
+        .leftJoinAndSelect('ImpostoDocumentoFiscal.cdImposto', 'imposto')
+        .where('documentoFiscal.cdPessoa = :idPessoa', { idPessoa })
+        .getMany();
+      }catch(erro){
+        this.logger.log("ERRO" + erro)
+        return new HttpException("Erro ao buscar a pessoa",HttpStatus.NOT_FOUND)
+      }
+    }
+
     async getNfByProductCode(cProd:any){
       try{
         return await this.itemDocumentoFiscalRepository.find({
@@ -204,8 +235,8 @@ export class DocumentoFiscalService {
                         })
                     );
                     
-                    const resultArray = Array.isArray(result.data.retorno.notas_fiscais) ? [...result.data.retorno.notas_fiscais] : [result.data.retorno.notas_fiscais] 
-                    results.push(resultArray);
+                    results.push(...result.data.retorno.notas_fiscais);
+            
                     page.pagina++;
                     page.numero_paginas = result.data.retorno.numero_paginas;
                     console.log(`Processando Notas página ${page.pagina} de ${page.numero_paginas}`);

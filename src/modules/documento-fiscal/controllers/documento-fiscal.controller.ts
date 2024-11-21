@@ -7,18 +7,32 @@ export class DocumentoFiscalController {
 /* Assim que terminar o recolhimento dos dados verificar esse endpoint funcionamento */
     constructor(private documentoFiscalService:DocumentoFiscalService){}
 
-    @Get('nfs/:id')
-    async getNfsByPessoa(@Param('id') cdPessoa:string){
+    //Recuperação de tabelas 
+    @Get('nfs/:cdPessoa')
+    async getNfsByPessoa(@Param('cdPessoa') cdPessoa:string){
         return this.documentoFiscalService.getAllNfsByPessoaErp(cdPessoa)
     }
 
+    @Get('nfs/item/:cdPessoa')
+    async getItemsByPessoa(@Param('cdPessoa') cdPessoa:number){
+        return this.documentoFiscalService.getItemsByPessoa(cdPessoa)
+    }
+
+    @Get('nfs/imposto/:cdPessoa')
+    async getImposByPessoa(@Param('cdPessoa') cdPessoa:string){
+        return this.documentoFiscalService.getImpostoByPessoa(cdPessoa)
+    }
+
     
-    @Get('nf/item/:id')
+    //Motores para busca customizada de dados específicos
+    //Busca de uma nota por um código de produto por exemplo
+    @Get('nfs/by-item/:id')
     async getNfByItem(@Param('id') cdItem:string){
         return this.documentoFiscalService.getNfByProductCode(cdItem)
     }
 
-    @Get('nf/client/:id')
+    //Start 
+    @Get('nf/process-client/:id')
     async processClient(@Param('id') cd:number){
         return this.documentoFiscalService.processarClienteEspecifico(cd)
     }

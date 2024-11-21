@@ -53,7 +53,7 @@ export class DocumentoFiscalDTO {
       this.tpNf = infNFe.ide[0].tpNF[0] === '1' ? 'Saída' : 'Entrada';
       this.natOp = infNFe.ide[0].natOp[0];
       this.xMotivo = nfeData.retorno.xml_nfe[0].nfeProc[0].protNFe[0].infProt[0].xMotivo[0];
-      this.xPag = infNFe.pag[0].detPag[0].tPag[0];
+      this.xPag = infNFe.pag[0].detPag[0].xPag[0];
       this.nrIde = infNFe.dest[0].CPF ? infNFe.dest[0].CPF[0] : infNFe.dest[0].CNPJ[0];
       this.nomeCliente = infNFe.dest[0].xNome[0];
       this.lagradouroCliente = `${infNFe.dest[0].enderDest[0].xLgr[0]} ${infNFe.dest[0].enderDest[0].nro[0]}`;
@@ -87,7 +87,7 @@ export class DocumentoFiscalDTO {
       this.tpNf = infNFe.ide.tpNF === '1' ? 'Saída' : 'Entrada';
       this.natOp = infNFe.ide.natOp;
       this.xMotivo = nfeData.nfeProc.protNFe.infProt.xMotivo;
-      this.xPag = infNFe.pag.detPag.tPag;
+      this.xPag = infNFe.pag.detPag.xPag;
       this.nrIde = infNFe.dest.CPF ? infNFe.dest.CPF : infNFe.dest.CNPJ;
       this.nomeCliente = infNFe.dest.xNome;
       this.lagradouroCliente = `${infNFe.dest.enderDest.xLgr} ${infNFe.dest.enderDest.nro}`;
