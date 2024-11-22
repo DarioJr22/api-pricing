@@ -61,17 +61,22 @@ export class DocumentoFiscalService {
       }
     }
 
-    
+    /* BUSCAR SÓ AS NOTAS DE ENTRADAAAAAAAAA */
     async processarClienteEspecifico(cdPessoa:number,tpNota?:'E' | 'S'){
       const cliente = await this.pessoaService.findById(cdPessoa);
 
       if(!(cliente instanceof HttpException)){
-          await this.extractDataQueue.add('extract', {
-              client: cliente[0],
-              erp: cliente[0].cdErp.dsErp,
-              deletebase:cliente[0].deletebase,
-              tpNota:tpNota
-          });
+
+        let param:any = {
+            client: cliente [0],
+            erp: cliente[0].cdErp.dsErp,
+            deletebase:cliente[0].deletebase,
+        }
+
+      if(tpNota) param.tpNota = tpNota
+
+
+          await this.extractDataQueue.add('extract',param );
       }
       }
     
@@ -251,7 +256,7 @@ export class DocumentoFiscalService {
                     dataFinal: dataFinal
                   }
 
-                  tpNota ? params.tpNota = tpNota : ''
+                  tpNota ? params.tipoNota = tpNota : ''
                   
                   
                     const result = await limiter.schedule(() =>

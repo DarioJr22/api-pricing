@@ -38,8 +38,8 @@ export class DocumentoFiscalController {
         return this.documentoFiscalService.processarClienteEspecifico(cd)
     }
 
-    @Get('nf/process-client/:id/:tpNf')
-    async processClientEpecific(@Param('id') cd:number,tpNf?:"E" | "S"){
+    @Get('nf/process-client/:id/nf-type/:tpNf')
+    async processClientEpecific(@Param('id') cd:number,@Param('tpNf') tpNf?:"E" | "S"){
         return this.documentoFiscalService.processarClienteEspecifico(cd,tpNf)
     }
 

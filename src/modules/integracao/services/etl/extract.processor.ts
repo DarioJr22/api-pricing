@@ -38,6 +38,7 @@ export class ExtractProcessor extends WorkerHost{
     async deleteDatabase(deletebase:string){
       if(deletebase == 'S') {await this.documentoFiscalService.limparSchema()}
     }
+    
     async process(job: Job<ExtractDTO>): Promise<any> {
         
         const {client, erp,deletebase,tpNota}  = job.data;
@@ -46,7 +47,7 @@ export class ExtractProcessor extends WorkerHost{
         try {
             this.logger.log(`Iniciando extração para o cliente ${client} e ERP ${erp}`);
            if (erp === 'Tiny') {
-            tpNota ? await this.documentoFiscalService.extractNotasTiny(client) : await this.documentoFiscalService.extractNotasTiny(client,tpNota)
+            tpNota ? await this.documentoFiscalService.extractNotasTiny(client,tpNota) : await this.documentoFiscalService.extractNotasTiny(client);
             }  else if (erp === 'Omie') {
                 await this.documentoFiscalService.extractNotasOmie(client,'ListarDocumentos');
             } else {

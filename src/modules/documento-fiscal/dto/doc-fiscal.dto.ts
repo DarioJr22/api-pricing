@@ -40,8 +40,10 @@ export class DocumentoFiscalDTO {
     let infNFe: any;
     let total: any;
 
+
+
     // Verifica se os dados são do Tiny ERP
-    if (nfeData.retorno && nfeData.retorno.xml_nfe) {
+    if (nfeData.retorno && nfeData.retorno.xml_nfe && nfeData.retorno.status[0] == 'OK' ) {
       // Extrai os dados do Tiny
       infNFe = nfeData.retorno.xml_nfe[0].nfeProc[0].NFe[0].infNFe[0];
       total = infNFe.total[0].ICMSTot[0];
@@ -53,7 +55,7 @@ export class DocumentoFiscalDTO {
       this.tpNf = infNFe.ide[0].tpNF[0] === '1' ? 'Saída' : 'Entrada';
       this.natOp = infNFe.ide[0].natOp[0];
       this.xMotivo = nfeData.retorno.xml_nfe[0].nfeProc[0].protNFe[0].infProt[0].xMotivo[0];
-      this.xPag = infNFe.pag[0].detPag[0].xPag[0];
+      this.xPag = infNFe.pag[0].detPag[0].xPag ? infNFe.pag[0].detPag[0].xPag[0] : infNFe.pag[0].detPag[0].tPag[0];
       this.nrIde = infNFe.dest[0].CPF ? infNFe.dest[0].CPF[0] : infNFe.dest[0].CNPJ[0];
       this.nomeCliente = infNFe.dest[0].xNome[0];
       this.lagradouroCliente = `${infNFe.dest[0].enderDest[0].xLgr[0]} ${infNFe.dest[0].enderDest[0].nro[0]}`;
