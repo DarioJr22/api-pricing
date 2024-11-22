@@ -134,6 +134,8 @@ export class DocumentoFiscalService {
     }
 
 
+    //nf/process-client/:id/:tpNf
+
 
     // Processar notas do Tiny com controle de requisições
     async extractNotasTiny(cliente: Pessoa,tpNota?:'E' | 'S') {
