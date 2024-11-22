@@ -154,7 +154,7 @@ export class DocumentoFiscalService {
       const issoexiste = await this.verificarValorExiste(cProd)
 
 
-      if(issoexiste){
+      if(issoexiste){//
         let result:any = await this.itemDocumentoFiscalRepository.createQueryBuilder('ItemDocumentoFiscal')
         .leftJoinAndSelect('ItemDocumentoFiscal.cdDocumentoFiscal', 'documentoFiscal')
         .where('ItemDocumentoFiscal.cProd = :cProd', { cProd })
