@@ -41,6 +41,9 @@ export class Pessoa {
   @Column({type:'varchar',length:100})
   email:string
 
+  @Column({type:'varchar',length:1,default:'N'})
+  deletebase:string
+
   @ManyToOne(() => RegimeTributario, (regime) => regime.pessoas)
   @JoinColumn({ name: 'cdRegimeTributario' })
   cdRegimeTributario: RegimeTributario;

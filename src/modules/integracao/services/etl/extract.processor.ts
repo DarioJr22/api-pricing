@@ -34,17 +34,20 @@ export class ExtractProcessor extends WorkerHost{
         this.logger.log(`Job id: ${id}, name: ${name} completes ${progress}%`);
         }
 
+
+    async deleteDatabase(deletebase:string){
+      if(deletebase == 'S') {await this.documentoFiscalService.limparSchema()}
+    }
     async process(job: Job<ExtractDTO>): Promise<any> {
         
-        const {client, erp}  = job.data;
+        const {client, erp,deletebase,tpNota}  = job.data;
+        this.deleteDatabase(deletebase)
 
         try {
             this.logger.log(`Iniciando extração para o cliente ${client} e ERP ${erp}`);
            if (erp === 'Tiny') {
-                await this.documentoFiscalService.limparSchema()
-                await this.documentoFiscalService.extractNotasTiny(client);
+            tpNota ? await this.documentoFiscalService.extractNotasTiny(client) : await this.documentoFiscalService.extractNotasTiny(client,tpNota)
             }  else if (erp === 'Omie') {
-                await this.documentoFiscalService.limparSchema()
                 await this.documentoFiscalService.extractNotasOmie(client,'ListarDocumentos');
             } else {
                 throw new Error('ERP não suportado');

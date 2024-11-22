@@ -55,19 +55,22 @@ export class DocumentoFiscalService {
         for (const cliente of clientes) {
           await this.extractDataQueue.add('extract', {
               client: cliente,
-              erp: cliente.cdErp.dsErp
+              erp: cliente.cdErp.dsErp,
+              deletebase:cliente.deletebase
           });
       }
     }
 
-
-    async processarClienteEspecifico(cdPessoa:number){
+    
+    async processarClienteEspecifico(cdPessoa:number,tpNota?:'E' | 'S'){
       const cliente = await this.pessoaService.findById(cdPessoa);
 
       if(!(cliente instanceof HttpException)){
           await this.extractDataQueue.add('extract', {
               client: cliente[0],
-              erp: cliente[0].cdErp.dsErp
+              erp: cliente[0].cdErp.dsErp,
+              deletebase:cliente[0].deletebase,
+              tpNota:tpNota
           });
       }
       }
@@ -133,19 +136,32 @@ export class DocumentoFiscalService {
 
 
     // Processar notas do Tiny com controle de requisições
-    async extractNotasTiny(cliente: Pessoa) {
+    async extractNotasTiny(cliente: Pessoa,tpNota?:'E' | 'S') {
     
         this.logger.log(`Params:${cliente.nmPessoa}, 
             ${await this.getFormatDate(await this.getStartOfLastYear())},
             ${await this.getFormatDate()},
             ${ this.limiter}`)
 
-        const notasTiny = await this.limiter.schedule(async () => 
-            await this.buscarListaNotasTiny(cliente,
-            await this.getFormatDate(await this.getStartOfLastYear()), //Pegar data de inicio do ano passado
-            await this.getFormatDate() //Pegar data de hojer
-            ));
+            let notasTiny:any = []
 
+            //Caso queira um tipo específico de nota né 
+            if (tpNota) {
+              notasTiny = await this.limiter.schedule(async () => 
+                await this.buscarListaNotasTiny(cliente,
+                await this.getFormatDate(await this.getStartOfLastYear()), //Pegar data de inicio do ano passado
+                await this.getFormatDate(), //Pegar data de hojer
+                tpNota
+                ));
+            }else{
+               notasTiny = await this.limiter.schedule(async () => 
+                await this.buscarListaNotasTiny(cliente,
+                await this.getFormatDate(await this.getStartOfLastYear()), //Pegar data de inicio do ano passado
+                await this.getFormatDate(),
+                ));
+            }
+
+       
         for (const nota of notasTiny.data) {  
 
           
@@ -197,7 +213,9 @@ export class DocumentoFiscalService {
      async buscarListaNotasTiny(
         client:Pessoa, 
         dataInicial:string, 
-        dataFinal:string) {
+        dataFinal:string,
+        tpNota?:'E' | 'S'
+      ) {
         const token = client['apiKey']['token']['app_key'];
     
         const limiter = new Bottleneck({
@@ -222,16 +240,21 @@ export class DocumentoFiscalService {
             
             do {
                 try {
+
+                let params:any = {
+                    token: token,
+                    formato: 'json',
+                    pagina: page.pagina,
+                    dataInicial:dataInicial,
+                    dataFinal: dataFinal
+                  }
+
+                  tpNota ? params.tpNota = tpNota : ''
+                  
                   
                     const result = await limiter.schedule(() =>
                         axios.get(`${LINKSINTEGRATION.TINY_GET_ALL_DOCUMENTS}`, {
-                            params: {
-                                token: token,
-                                formato: 'json',
-                                pagina: page.pagina,
-                                dataInicial:dataInicial,
-                                dataFinal: dataFinal
-                            },
+                            params:params,
                         })
                     );
                     

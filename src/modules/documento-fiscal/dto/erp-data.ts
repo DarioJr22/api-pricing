@@ -4,6 +4,8 @@ import { DocumentoFiscalDTO, ImpostoDTO, ItemDocumentoFiscalDTO } from "./doc-fi
 export interface ExtractDTO {
     erp: 'Tiny' | 'Omie'; // Define os ERPs suportados
     client: Pessoa; // Aqui poderia ser mais específico dependendo da estrutura dos dados de cada ERP
+    deletebase:'S' | 'N'
+    tpNota:'E' | 'S'
   }
 export interface TransformtDTO {
     erp: 'Tiny' | 'Omie'; // Define os ERPs suportados

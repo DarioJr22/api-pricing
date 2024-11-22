@@ -23,6 +23,7 @@ export class DocumentoFiscalController {
         return this.documentoFiscalService.getImpostoByPessoa(cdPessoa)
     }
 
+    @Get('nfs')
     
     //Motores para busca customizada de dados específicos
     //Busca de uma nota por um código de produto por exemplo
@@ -35,6 +36,11 @@ export class DocumentoFiscalController {
     @Get('nf/process-client/:id')
     async processClient(@Param('id') cd:number){
         return this.documentoFiscalService.processarClienteEspecifico(cd)
+    }
+
+    @Get('nf/process-client/:id/:tpNf')
+    async processClientEpecific(@Param('id') cd:number,tNf?:"E" | "S"){
+        return this.documentoFiscalService.processarClienteEspecifico(cd,tNf)
     }
 
     
