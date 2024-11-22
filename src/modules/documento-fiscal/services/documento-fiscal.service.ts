@@ -170,7 +170,7 @@ export class DocumentoFiscalService {
          return result
       }else{
         this.logger.log("Erro" )
-        return new HttpException("Isso nem existe tu vai praonde ?",HttpStatus.NOT_FOUND)
+        return new HttpException("Item não encontrado em nemhuma nota de Entrada",HttpStatus.NOT_FOUND)
       }
 
       }catch(erro){
