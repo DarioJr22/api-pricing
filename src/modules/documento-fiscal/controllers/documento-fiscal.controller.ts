@@ -25,7 +25,7 @@ export class DocumentoFiscalController {
 
     //Motores para busca customizada de dados específicos
     //Busca de uma nota por um código de produto por exemplo
-    @Get('nfs/by-item/:id')
+    @Get('nf/item/:id')
     async getNfByItem(@Param('id') cdItem:string){
         return this.documentoFiscalService.getNfByProductCode(cdItem)
     }
