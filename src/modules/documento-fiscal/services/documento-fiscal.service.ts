@@ -124,23 +124,55 @@ export class DocumentoFiscalService {
       }
     }
 
+    async verifyItem(cprod){
+     
+     
+      const exists = await this.itemDocumentoFiscalRepository.exists({
+        where:{
+          cProd:cprod
+        }
+      })
+
+      return exists
+    }
+
+
+    async verificarValorExiste(cprod): Promise<boolean> {
+      try {
+        const registro = await this.itemDocumentoFiscalRepository.findOne({
+          where: {cProd: cprod },
+        });
+        return !!registro; // Retorna true se encontrar, false caso contrário
+      } catch (error) {
+        console.error('Erro ao verificar valor:', error);
+        return false;
+      }
+    }
     async getNfEntryByProductCode(cProd:any){
       try{
       const tpNf = 'Entrada'
+      const issoexiste = await this.verificarValorExiste(cProd)
 
-       let result:any = await this.itemDocumentoFiscalRepository.createQueryBuilder('ItemDocumentoFiscal')
-       .leftJoinAndSelect('ItemDocumentoFiscal.cdDocumentoFiscal', 'documentoFiscal')
-       .where('ItemDocumentoFiscal.cProd = :cProd', { cProd })
-       .where('documentoFiscal.tpNf = :tpNf', { tpNf })
-       .getMany();
 
-        //Regrinha de ser a ultima nota de entrada
-        if(result.length >0){
-          result.sort((a,b) => new Date(b.dtEmissao as string).getTime() - new Date(a.dtEmissao as string).getTime())
-          result = result[0]
-        }
-        
-        return result
+      if(issoexiste){
+        let result:any = await this.itemDocumentoFiscalRepository.createQueryBuilder('ItemDocumentoFiscal')
+        .leftJoinAndSelect('ItemDocumentoFiscal.cdDocumentoFiscal', 'documentoFiscal')
+        .where('ItemDocumentoFiscal.cProd = :cProd', { cProd })
+        .where('documentoFiscal.tpNf = :tpNf', { tpNf })
+        .getMany();
+ 
+         //Regrinha de ser a ultima nota de entrada
+         if(result.length >0){
+           result.sort((a,b) => new Date(b.dtEmissao as string).getTime() - new Date(a.dtEmissao as string).getTime())
+           result = result[0]
+         }
+         
+         return result
+      }else{
+        this.logger.log("Erro" )
+        return new HttpException("Isso nem existe tu vai praonde ?",HttpStatus.NOT_FOUND)
+      }
+
       }catch(erro){
         this.logger.log("Erro" + erro)
         return new HttpException("Erro ao buscar a nota pelo código do produto",HttpStatus.NOT_FOUND)
