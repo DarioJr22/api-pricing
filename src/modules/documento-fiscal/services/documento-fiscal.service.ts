@@ -61,7 +61,7 @@ export class DocumentoFiscalService {
       }
     }
 
-    /* BUSCAR SÓ AS NOTAS DE ENTRADAAAAAAAAA */
+    /* Recupera notas específicas de um cliente  */
     async processarClienteEspecifico(cdPessoa:number,tpNota?:'E' | 'S'){
       const cliente = await this.pessoaService.findById(cdPessoa);
 
@@ -324,8 +324,8 @@ export class DocumentoFiscalService {
 
     
      // Processar notas do Omie com controle de requisições e conversão de XML
-     async extractNotasOmie(cliente: Pessoa,metodo:string) {
-        const notasOmie = await this.limiter.schedule(() => this.buscarNotasOmie(cliente.cdPessoa,metodo));
+     async extractNotasOmie(cliente: Pessoa,metodo:string,tpNota:'0' | '1') {
+        const notasOmie = await this.limiter.schedule(() => this.buscarNotasOmie(cliente.cdPessoa,metodo,tpNota));
         
         //Transform
         for (const xmlNota of notasOmie) {
@@ -375,7 +375,7 @@ export class DocumentoFiscalService {
       
 
     
-    async buscarNotasOmie(clientId: number,metodo:string) {
+    async buscarNotasOmie(clientId: number,metodo:string,tpNota?:'0' | '1') {
         const cliente = await this.pessoaService.findById(clientId);
         const token = cliente[0]['apiKey']['token'];
         let page = 1
@@ -401,7 +401,7 @@ export class DocumentoFiscalService {
                                 "nPagina": page,
                                 "nRegPorPagina": 500,
                                 "cModelo":"55",
-                                "cOperacao":"0"
+                                "cOperacao":tpNota
                             }],
                         },{
                             headers:{

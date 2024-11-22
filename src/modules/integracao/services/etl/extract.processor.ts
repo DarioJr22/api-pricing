@@ -49,7 +49,8 @@ export class ExtractProcessor extends WorkerHost{
            if (erp === 'Tiny') {
             tpNota ? await this.documentoFiscalService.extractNotasTiny(client,tpNota) : await this.documentoFiscalService.extractNotasTiny(client);
             }  else if (erp === 'Omie') {
-                await this.documentoFiscalService.extractNotasOmie(client,'ListarDocumentos');
+                const tpNotaOmie = tpNota == 'E' ? '0' : '1' 
+                await this.documentoFiscalService.extractNotasOmie(client,'ListarDocumentos',tpNotaOmie);
             } else {
                 throw new Error('ERP não suportado');
             }
