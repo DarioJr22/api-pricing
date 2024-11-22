@@ -124,17 +124,26 @@ export class DocumentoFiscalService {
       }
     }
 
-    async getNfByProductCode(cProd:any){
+    async getNfEntryByProductCode(cProd:any){
       try{
-        return await this.itemDocumentoFiscalRepository.find({
-          where:{
-            cProd:cProd
-          },
-          relations:['cdDocumentoFiscal']
-        })
+      const tpNf = 'Entrada'
+
+       let result:any = await this.itemDocumentoFiscalRepository.createQueryBuilder('ItemDocumentoFiscal')
+       .leftJoinAndSelect('ItemDocumentoFiscal.cdDocumentoFiscal', 'documentoFiscal')
+       .where('ItemDocumentoFiscal.cProd = :cProd', { cProd })
+       .where('documentoFiscal.tpNf = :tpNf', { tpNf })
+       .getMany();
+
+        //Regrinha de ser a ultima nota de entrada
+        if(result.length >0){
+          result.sort((a,b) => new Date(b.dtEmissao as string).getTime() - new Date(a.dtEmissao as string).getTime())
+          result = result[0]
+        }
+        
+        return result
       }catch(erro){
         this.logger.log("Erro" + erro)
-        return new HttpException("Erro ao buscar a pessoa",HttpStatus.NOT_FOUND)
+        return new HttpException("Erro ao buscar a nota pelo código do produto",HttpStatus.NOT_FOUND)
       }
     }
 

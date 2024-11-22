@@ -27,7 +27,7 @@ export class DocumentoFiscalController {
     //Busca de uma nota por um código de produto por exemplo
     @Get('nf/item/:id')
     async getNfByItem(@Param('id') cdItem:string){
-        return this.documentoFiscalService.getNfByProductCode(cdItem)
+        return this.documentoFiscalService.getNfEntryByProductCode(cdItem)
     }
 
     //Start 
