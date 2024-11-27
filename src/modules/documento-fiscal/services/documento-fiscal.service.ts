@@ -139,15 +139,25 @@ export class DocumentoFiscalService {
 
     async verificarValorExiste(cprod): Promise<boolean> {
       try {
-        const registro = await this.itemDocumentoFiscalRepository.findOne({
-          where: {cProd: cprod },
+        // Busca o item fiscal pelo código do produto
+        const item = await this.itemDocumentoFiscalRepository.findOne({
+          where: { cProd: cprod },
+          relations: ['cdDocumentoFiscal'], // Faz a relação com DocumentoFiscal
         });
-        return !!registro; // Retorna true se encontrar, false caso contrário
+    
+        // Verifica se o item existe e se o documento fiscal é uma nota de entrada
+        if (item && item.cdDocumentoFiscal && item.cdDocumentoFiscal.tpNf === 'Entrada') {
+          return true;
+        }
+    
+        return false;
       } catch (error) {
         console.error('Erro ao verificar valor:', error);
         return false;
       }
     }
+
+
     async getNfEntryByProductCode(cProd:any){
       try{
       const tpNf = 'Entrada'
